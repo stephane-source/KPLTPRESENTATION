@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KOPILOT — Analyse Financière IA</title>
+<style>
+:root{--N:#0A1E6E;--B:#3B82F6;--C:#00C2CB;--G:#22C55E;--R:#EF4444;--A:#F59E0B}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#010B1F;font-family:'Segoe UI',system-ui,sans-serif;color:#E2E8F0;min-height:100vh}
+input,textarea,button,select{font-family:inherit}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:2px}
+#topbar{background:var(--N);height:52px;display:flex;align-items:center;padding:0 20px;gap:10px;border-bottom:1px solid rgba(255,255,255,0.07);position:sticky;top:0;z-index:100}
+#topbar .logo{color:var(--C);font-weight:800;font-size:18px;letter-spacing:-0.5px}
+#topbar .sub{color:rgba(255,255,255,0.3);font-size:11px}
+#main{max-width:860px;margin:0 auto;padding:24px 16px}
+#stepper{display:flex;align-items:center;justify-content:center;margin-bottom:24px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
+.step-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;flex-shrink:0}
+.step-label{font-size:9px;margin-top:3px;text-align:center;white-space:nowrap}
+.step-col{display:flex;flex-direction:column;align-items:center;width:54px;flex-shrink:0}
+.step-line{flex:1;height:1px;margin:0 2px;margin-bottom:14px;min-width:8px}
+.card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:22px 20px;margin-bottom:16px}
+.card-title{font-size:18px;font-weight:700;color:white;margin-bottom:4px}
+.card-sub{font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:18px}
+.btn{background:linear-gradient(135deg,var(--B),var(--N));border:none;color:white;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;transition:opacity 0.15s}
+.btn:disabled{opacity:0.35;cursor:not-allowed}
+.btn-g{background:transparent;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);padding:9px 18px;border-radius:8px;font-weight:500;font-size:12px;cursor:pointer}
+.btn-sm{padding:5px 10px;font-size:11px}
+.inp{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px 12px;color:white;font-size:13px;width:100%;outline:none}
+.inp:focus{border-color:var(--B)}
+select.inp option{background:#1a2a5e;color:white}
+textarea.inp{min-height:80px;resize:vertical}
+.lbl{font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:4px;display:block;text-transform:uppercase;letter-spacing:0.5px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(max-width:580px){.g3{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}}
+.prof-card{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all 0.15s}
+.prof-card.active{background:rgba(59,130,246,0.14);border-color:var(--B)}
+.prof-icon{font-size:22px;flex-shrink:0}
+.prof-name{font-size:12px;font-weight:600;color:white}
+.prof-desc{font-size:10px;color:rgba(255,255,255,0.35);margin-top:1px}
+.file-slot{background:rgba(255,255,255,0.025);border:1px dashed rgba(255,255,255,0.1);border-radius:10px;padding:14px;cursor:pointer;text-align:center;transition:all 0.15s}
+.file-slot.loaded{background:rgba(34,197,94,0.07);border-color:var(--G)}
+.file-slot-icon{font-size:20px;margin-bottom:4px}
+.file-slot-name{font-size:11px;font-weight:600;color:white;margin-bottom:2px}
+.file-slot-status{font-size:10px;color:rgba(255,255,255,0.3);word-break:break-all}
+.file-slot.loaded .file-slot-status{color:var(--G)}
+.ent-block{background:rgba(255,255,255,0.025);border-radius:8px;padding:14px;margin-bottom:10px;border:1px solid rgba(255,255,255,0.06)}
+.ent-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.kpi-card{background:rgba(255,255,255,0.04);border-radius:8px;padding:12px 14px;border-left:3px solid}
+.kpi-label{font-size:9px;color:rgba(255,255,255,0.38);text-transform:uppercase;letter-spacing:0.5px}
+.kpi-val{font-size:15px;font-weight:700;margin-top:3px}
+.alert{background:rgba(239,68,68,0.09);border:1px solid rgba(239,68,68,0.2);border-radius:7px;padding:7px 11px;font-size:11px;color:#FCA5A5;margin-top:6px}
+/* QUESTIONNAIRE */
+.q-section{margin-bottom:20px}
+.q-section-title{font-size:13px;font-weight:700;color:var(--C);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid rgba(0,194,203,0.2)}
+.q-block{margin-bottom:14px}
+.q-label{font-size:12px;color:rgba(255,255,255,0.75);margin-bottom:7px;display:block;line-height:1.4}
+.q-options{display:flex;gap:8px;flex-wrap:wrap}
+.q-opt{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 13px;font-size:12px;color:rgba(255,255,255,0.6);cursor:pointer;transition:all 0.15s}
+.q-opt.sel{background:rgba(59,130,246,0.18);border-color:var(--B);color:white;font-weight:600}
+/* LOADING */
+.load-wrap{text-align:center;padding:52px 20px}
+.load-icon{font-size:38px;margin-bottom:14px;display:inline-block;animation:spin 2s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.progress-bar{height:4px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;max-width:320px;margin:20px auto 8px}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--B),var(--C));border-radius:2px;transition:width 0.6s}
+/* TABS */
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.tab-btn{border-color:rgba(255,255,255,0.1)!important;color:rgba(255,255,255,0.4)!important;font-weight:400!important}
+.tab-btn.active{border-color:var(--B)!important;color:white!important;font-weight:700!important}
+/* IA */
+#ia-history{background:rgba(0,0,0,0.2);border-radius:8px;padding:12px;min-height:160px;max-height:280px;overflow-y:auto;margin-bottom:10px}
+.ia-msg{margin-bottom:8px}
+.ia-msg.user{text-align:right}
+.ia-bubble{display:inline-block;max-width:82%;border-radius:8px;padding:8px 11px;font-size:12px;color:white;white-space:pre-wrap;line-height:1.5}
+.ia-msg.user .ia-bubble{background:rgba(59,130,246,0.18)}
+.ia-msg.assistant .ia-bubble{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.06)}
+.ia-input-row{display:flex;gap:6px}
+.empty-ia{color:rgba(255,255,255,0.2);font-size:11px;text-align:center;padding:40px 0}
+.flex-between{display:flex;justify-content:space-between;align-items:center;margin-top:16px;gap:8px}
+.ent-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.error-box{background:rgba(239,68,68,0.09);border:1px solid rgba(239,68,68,0.2);border-radius:7px;padding:9px 12px;font-size:12px;color:#FCA5A5;margin-top:10px}
+.pappers-info{margin-top:6px;font-size:10px;color:var(--C)}
+/* RAPPORT affiché inline */
+#rapport-container{background:white;border-radius:12px;overflow:auto;max-height:75vh;padding:0}
+#rapport-container iframe{width:1280px;min-height:720px;border:none;transform-origin:top left;display:block}
+.rapport-zoom{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.rapport-zoom span{font-size:11px;color:rgba(255,255,255,0.4)}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <svg width="110" height="32" viewBox="0 0 110 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="32" height="32" rx="6" fill="#00C2CB"/>
+    <path d="M8 8h6v7l6-7h7L19 17l9 7h-7l-6-7v7H8V8z" fill="#0A1E6E"/>
+    <text x="40" y="22" font-family="Segoe UI,system-ui,sans-serif" font-weight="800" font-size="15" fill="white" letter-spacing="-0.5">KOPILOT</text>
+  </svg>
+  <span class="sub">| Analyse Financière IA</span>
+</div>
+<div id="main">
+  <div id="stepper"></div>
+  <div id="content"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+const ST = {
+  step:0, profile:"", spec:"",
+  ents:[{id:"e1",name:"",siren:"",pappers:null}],
+  files:{}, parsed:{}, activeEnt:0,
+  answers:{
+    retraitDir:"Non", ebitdaN:"Non", porteurType:"Salarié",
+    groupeTVA:"Non", typeHonoraires:"Mixte", exercice:"",
+    schema:"1asso-1sas", nomAsso1:"", nomAsso2:"", nomSas:"",
+    // CDS spécifiques
+    specialite:"Pluridisciplinaire", conventionCol:"CC51", finess:"",
+    dotationARS:"Non", leasing:"Non", ebitdar:"Non",
+    retraitDirCDS:"Non", retraitDirMontant:"",
+    excessRemu:"Non", excessRemuMontant:"",
+    objectifCession:"Non", objectifLevee:"Non",
+    commentaire:""
+  },
+  result:"", error:"", iaHist:[], tab:"rapport", zoom:0.6
+};
+
+const PROFILES=[
+  {id:"generique",   icon:"📊",label:"Générique",      desc:"Tout type de société"},
+  {id:"sel-dentaire",icon:"🦷",label:"SEL Dentaire",    desc:"Cabinet dentaire, SELARL"},
+  {id:"centre-sante",icon:"🏥",label:"Centre de Santé", desc:"CDS, GIE, MSP"},
+  {id:"pharmacie",   icon:"💊",label:"Pharmacie",       desc:"Officine, SELARL pharma"},
+  {id:"audio",       icon:"👂",label:"Audioprothèse",   desc:"Centre audio, franchise"},
+];
+const FSLOTS=[
+  {id:"fec",     icon:"📋",label:"FEC",         required:true},
+  {id:"silae",   icon:"👥",label:"SILAE"},
+  {id:"balance", icon:"⚖️",label:"Balance"},
+  {id:"gl",      icon:"📖",label:"Grand Livre"},
+  {id:"bilan",   icon:"📄",label:"Bilan N-1"},
+  {id:"emprunts",icon:"💰",label:"Emprunts"},
+];
+const STEPS=["Profil","Entités","Fichiers","Analyse","Génération"];
+
+// ══════════════════════════════════════════
+// EXTRACTION SIREN DEPUIS FEC
+// ══════════════════════════════════════════
+function extractSirenFromFEC(text, filename){
+  // Méthode 0 : SIREN dans le nom du fichier (ex: 923124820FECPROVISOIRE...)
+  if(filename){
+    const mFn=filename.match(/^(\d{9})/);
+    if(mFn)return mFn[1];
+    // Aussi chercher pattern SIREN n'importe où dans le nom
+    const mFn2=filename.match(/\b(\d{9})\b/);
+    if(mFn2)return mFn2[1];
+  }
+
+  const lines=text.split(/\r?\n/).filter(Boolean);
+  if(!lines.length)return null;
+
+  // Méthode 1 : colonne "siren" dans l'en-tête
+  const sep=lines[0].includes("|")?"|":lines[0].includes(";")?";":"\t";
+  const cols=lines[0].split(sep).map(c=>c.trim().replace(/^"|"$/g,"").toLowerCase().replace(/\s/g,""));
+  const sirenColIdx=cols.findIndex(c=>c==="siren"||c==="numsiren"||c==="numerosiren");
+  if(sirenColIdx>=0&&lines.length>1){
+    const val=lines[1].split(sep)[sirenColIdx]?.trim().replace(/^"|"$/g,"").replace(/\s/g,"");
+    if(val&&/^\d{9}$/.test(val))return val;
+  }
+
+  // Méthode 2 : premières lignes, pattern 9 chiffres isolé (hors dates et comptes)
+  const sirenPattern=/\b(\d{9})\b/g;
+  for(let i=0;i<Math.min(20,lines.length);i++){
+    const matches=[...lines[i].matchAll(sirenPattern)];
+    for(const m of matches){
+      const v=m[1];
+      if(v[0]!=="0"&&!v.startsWith("20")&&!v.startsWith("19")&&!v.startsWith("40")&&!v.startsWith("41")){
+        return v;
+      }
+    }
+  }
+  return null;
+}
+
+async function fetchPappers(entIdx,siren){
+  if(!siren||!/^\d{9}$/.test(siren.replace(/\s/g,"")))return;
+  siren=siren.replace(/\s/g,"");
+  // Essayer plusieurs endpoints Pappers (certains bloqués selon contexte)
+  const urls=[
+    "https://suggestions.pappers.fr/v2?q="+siren+"&longueur=1",
+    "https://api.pappers.fr/v2/suggestions?q="+siren+"&longueur=1",
+  ];
+  for(const url of urls){
+    try{
+      const r=await fetch(url,{mode:"cors"});
+      if(!r.ok)continue;
+      const d=await r.json();
+      const results=d.resultats_siren||d.resultats||[];
+      const s=results[0];
+      if(s){
+        ST.ents[entIdx].pappers=s;
+        if(!ST.ents[entIdx].name)ST.ents[entIdx].name=s.denomination||s.nom_entreprise||s.nom||"";
+        if(!ST.ents[entIdx].siren)ST.ents[entIdx].siren=siren;
+        render();
+        return;
+      }
+    }catch(err){console.warn("Pappers error on",url,":",err.message);}
+  }
+  // Fallback : afficher le SIREN même sans Pappers
+  if(!ST.ents[entIdx].siren){
+    ST.ents[entIdx].siren=siren;
+    render();
+  }
+}
+
+// ══════════════════════════════════════════
+// PARSE FEC
+// ══════════════════════════════════════════
+function parseFEC(text){
+  const lines=text.split(/\r?\n/).filter(Boolean);
+  if(lines.length<2)return null;
+  const sep=lines[0].includes("|")?"|":lines[0].includes(";")?";":"\t";
+  const cols=lines[0].split(sep).map(c=>c.trim().replace(/^"|"$/g,"").toLowerCase().replace(/\s/g,""));
+  const gi=ks=>cols.findIndex(c=>ks.some(k=>c===k));
+  const iC=gi(["comptenum","compte"]),iD=gi(["debit"]),iCr=gi(["credit"]);
+  const iDt=gi(["ecrituredate","dateecr"]),iLt=gi(["ecriturelet"]),iPd=gi(["piecedate"]);
+  const iAxN=gi(["compauxnum","auxiliairenum"]),iAxL=gi(["compauxlib","auxiliairelib"]);
+  const iJ=gi(["journalcode","journal"]);
+  const pa=v=>{if(!v)return 0;const n=parseFloat(v.toString().replace(/["\s]/g,"").replace(",","."));return isNaN(n)?0:n;};
+  const ym=dt=>dt?dt.replace(/^"|"$/g,"").replace(/[^0-9]/g,"").substring(0,6):"";
+
+  // ── PASSE 1 : soldes de comptes et données brutes ──────────────────────
+  // Pour chaque compte : solde = Σdebit - Σcredit (ALL entries incl. AN)
+  const accts={}; // { cpt: { d:0, c:0, lib:"", axn:"", axl:"" } }
+  let CA=0,achats=0,chargesExt=0,impots=0,salaires=0,chargesSoc=0,dotAmort=0;
+  let autresProd=0,autresChg=0,prodFin=0,chgFin=0,prodExcep=0,chgExcep=0,IS=0;
+  const caMonth={},chgMonth={},fourn={};
+  const agedP={"0-30":0,"30-60":0,"60-90":0,">90":0};
+  const agedR={"0-30":0,"30-60":0,"60-90":0,">90":0};
+  let totAP=0,totAR=0;
+  const today=new Date();
+
+  for(let i=1;i<lines.length;i++){
+    const f=lines[i].split(sep).map(v=>v.trim().replace(/^"|"$/g,""));
+    if(f.length<4)continue;
+    const cpt=iC>=0?f[iC]:"";if(!cpt)continue;
+    const d=pa(iD>=0?f[iD]:0),c=pa(iCr>=0?f[iCr]:0);
+    const dt=iDt>=0?f[iDt]:"",lt=iLt>=0?f[iLt]:"",pd=iPd>=0?f[iPd]:"";
+    const jnl=(iJ>=0?f[iJ]:"").toUpperCase().trim();
+    const axn=iAxN>=0?f[iAxN]:"",axl=iAxL>=0?f[iAxL]:"";
+    const mo=ym(dt);
+    // Journal AN = écritures d'ouverture → bilan uniquement, PAS CR
+    const isAN=jnl==="AN"||jnl==="RAN"||jnl==="A-NOU"||jnl==="ANO"||jnl==="ANOUV"||jnl==="OUV";
+
+    // ── Soldes de comptes (bilan) — TOUTES les écritures ──
+    if(!accts[cpt])accts[cpt]={d:0,c:0,axn,axl};
+    accts[cpt].d+=d; accts[cpt].c+=c;
+
+    // ── Pour 40x et 41x : soldes PAR AUXILIAIRE (évite la compensation) ──
+    // La règle PCG : chaque tiers est classé séparément selon son solde net
+    // Un fournisseur débiteur (avoir) va en actif, créditeur en passif
+    if(cpt.startsWith("40")||cpt.startsWith("41")){
+      const auxKey = axn ? (cpt.substring(0,2)+"__AUX__"+axn) : (cpt.substring(0,2)+"__CPT__"+cpt);
+      if(!accts[auxKey])accts[auxKey]={d:0,c:0,axn,axl:axl||axn,isTiersAux:true,cptRacine:cpt.substring(0,2)};
+      accts[auxKey].d+=d; accts[auxKey].c+=c;
+    }
+
+    // ── CR — SAUF journal AN ──
+    if(!isAN){
+      if(cpt.match(/^7[012]/))CA+=c-d;
+      else if(cpt.startsWith("60"))achats+=d-c;
+      else if(cpt.match(/^6[12]/))chargesExt+=d-c;
+      else if(cpt.startsWith("63"))impots+=d-c;
+      else if(cpt.match(/^64[1234]/))salaires+=d-c;
+      else if(cpt.match(/^64[5-8]/))chargesSoc+=d-c;
+      else if(cpt.startsWith("68"))dotAmort+=d-c;
+      else if(cpt.match(/^7[45]/))autresProd+=c-d;
+      else if(cpt.startsWith("65"))autresChg+=d-c;
+      else if(cpt.startsWith("76"))prodFin+=c-d;
+      else if(cpt.startsWith("66"))chgFin+=d-c;
+      else if(cpt.startsWith("77"))prodExcep+=c-d;
+      else if(cpt.startsWith("67"))chgExcep+=d-c;
+      else if(cpt.match(/^69[59]/))IS+=d-c;
+      // CA/charges mensuels
+      if(cpt.startsWith("70")&&mo)caMonth[mo]=(caMonth[mo]||0)+(c-d);
+      if(cpt.startsWith("6")&&mo)chgMonth[mo]=(chgMonth[mo]||0)+(d-c);
+    }
+
+    // Fournisseurs auxiliaires (pour top 15) — hors AN
+    if(!isAN&&cpt.startsWith("40")&&axn){
+      if(!fourn[axn])fourn[axn]={name:axl||axn,d:0,c:0};
+      fourn[axn].d+=d; fourn[axn].c+=c;
+    }
+    // Balance âgée fournisseurs (40x non lettrés, solde créditeur) — hors AN
+    if(!isAN&&cpt.startsWith("40")&&!lt&&c-d>0){
+      const rd=pd||dt;
+      if(rd&&rd.length>=8){try{
+        const age=Math.floor((today-new Date(+rd.substring(0,4),+rd.substring(4,6)-1,+rd.substring(6,8)))/86400000);
+        const bk=age<=30?"0-30":age<=60?"30-60":age<=90?"60-90":">90";
+        agedP[bk]+=c-d;totAP+=c-d;
+      }catch{}}
+    }
+    // Balance âgée clients (41x non lettrés, solde débiteur) — hors AN
+    if(!isAN&&cpt.startsWith("41")&&!lt&&d-c>0){
+      const rd=pd||dt;
+      if(rd&&rd.length>=8){try{
+        const age=Math.floor((today-new Date(+rd.substring(0,4),+rd.substring(4,6)-1,+rd.substring(6,8)))/86400000);
+        const bk=age<=30?"0-30":age<=60?"30-60":age<=90?"60-90":">90";
+        agedR[bk]+=d-c;totAR+=d-c;
+      }catch{}}
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // PASSE 2 — Classification bilan : UNE SEULE CHAÎNE else-if
+  // garantit qu'aucun compte n'est classé deux fois
+  // ══════════════════════════════════════════════════════════════
+  let imoIncorpB=0,imoCorpB=0,imoFinB=0,imoAmortB=0;
+  let stocksB=0,creancesCliB=0,autresCreancesB=0,dispoB=0;
+  let capitalB=0,reservesB=0,rAnB=0,rnB=0,subvB=0,provB=0;
+  let dettesFinB=0,fournissB=0,dettesSocB=0,dettesFixB=0,autresDettesB=0;
+  const comptesList=[];
+
+  for(const [key,v] of Object.entries(accts)){
+    const solde=Math.round((v.d-v.c)*100)/100;
+    if(Math.abs(solde)<0.005)continue;
+
+    // Sauter les comptes 40x/41x agrégés — on utilise les clés AUX/CPT à la place
+    if(!v.isTiersAux && (key.startsWith("40")||key.startsWith("41")))continue;
+
+    // Identifier la racine effective du compte
+    // Pour les clés auxiliaires 40__AUX__xxx et 41__AUX__xxx, on utilise cptRacine
+    const racine = v.isTiersAux ? v.cptRacine : key.substring(0,2);
+    let categorie="";
+
+    // ── Classe 1 : Comptes de capitaux ──────────────────────────
+    if(racine==="10"){
+      if(key.startsWith("105")||key.startsWith("106")||key.startsWith("107")){reservesB+=(-solde);categorie="Réserves";}
+      else{capitalB+=(-solde);categorie="Capital";}
+    }
+    else if(key.startsWith("11")){rAnB+=(-solde);categorie="RAN";}
+    else if(key.startsWith("12")){rnB+=(-solde);categorie="Résultat";}
+    else if(key.startsWith("13")){subvB+=(-solde);categorie="Subventions";}
+    else if(key.startsWith("14")){reservesB+=(-solde);categorie="Réserves régl.";}
+    else if(key.startsWith("15")){provB+=(-solde);categorie="Provisions";}
+    else if(key.startsWith("16")||key.startsWith("17")){dettesFinB+=(-solde);categorie="Emprunts";}
+    else if(key.startsWith("18")){autresDettesB+=(-solde);categorie="Cptes liaison";}
+    else if(key.startsWith("19")){imoAmortB+=(-solde);categorie="Dépréc.immo fin";}
+
+    // ── Classe 2 : Immobilisations ───────────────────────────────
+    else if(key.startsWith("20")){imoIncorpB+=solde;categorie="Immo incorp";}
+    else if(key.startsWith("21")||key.startsWith("22")||key.startsWith("23")||key.startsWith("24")||key.startsWith("25")){imoCorpB+=solde;categorie="Immo corp";}
+    else if(key.startsWith("26")||key.startsWith("27")){imoFinB+=solde;categorie="Immo fin";}
+    else if(key.startsWith("28")){imoAmortB+=(-solde);categorie="Amortissements";}  // solde<0 → -solde>0
+    else if(key.startsWith("29")){imoAmortB+=(-solde);categorie="Dépréc.immo";}
+
+    // ── Classe 3 : Stocks ────────────────────────────────────────
+    else if(key.startsWith("3")){
+      if(solde>0){stocksB+=solde;categorie="Stocks";}
+      else{provB+=(-solde);categorie="Dépréc.stocks";}
+    }
+
+    // ── Classe 4 : Tiers (40/41 via auxiliaires, 42-49 directs) ─
+    else if(racine==="40"){
+      if(solde>0){autresCreancesB+=solde;categorie="Fourn.débiteur";}
+      else{fournissB+=(-solde);categorie="Fournisseurs";}
+    }
+    else if(racine==="41"){
+      if(solde>0){creancesCliB+=solde;categorie="Clients";}
+      else{autresDettesB+=(-solde);categorie="Clients.créditeur";}
+    }
+    else if(key.startsWith("42")||key.startsWith("43")){
+      if(solde>0){autresCreancesB+=solde;categorie="Pers./Org.soc débiteur";}
+      else{dettesSocB+=(-solde);categorie="Dettes sociales";}
+    }
+    else if(key.startsWith("44")){
+      if(solde>0){autresCreancesB+=solde;categorie="Fiscal débiteur";}
+      else{dettesFixB+=(-solde);categorie="Dettes fiscales";}
+    }
+    else if(key.startsWith("45")||key.startsWith("46")||key.startsWith("47")||key.startsWith("48")){
+      if(solde>0){autresCreancesB+=solde;categorie="Autres créances";}
+      else{autresDettesB+=(-solde);categorie="Autres dettes";}
+    }
+    else if(key.startsWith("49")){provB+=(-solde);categorie="Dépréc.créances";}
+
+    // ── Classe 5 : Trésorerie ────────────────────────────────────
+    else if(key.startsWith("5")){
+      if(solde>0){dispoB+=solde;categorie="Trésorerie";}
+      else{dettesFinB+=(-solde);categorie="Découvert bancaire";}
+    }
+
+    // Debug (vrais comptes uniquement)
+    if(!v.isTiersAux){
+      comptesList.push({cpt:key,lib:v.axl||"",debit:Math.round(v.d),credit:Math.round(v.c),solde:Math.round(solde),categorie});
+    }
+  }
+
+  // ── Totaux bilan provisoires (utilisés pour calcul rnB_final ci-dessous) ──
+  const actiImmoNet=imoIncorpB+imoCorpB+imoFinB-imoAmortB;
+
+  // ══════════════════════════════════════════════════════════════
+  // CALCULS CR (hors bilan)
+  // ══════════════════════════════════════════════════════════════
+  const ms=salaires+chargesSoc,MB=CA-achats-chargesExt;
+  const EBE=MB-impots-ms,EBIT=EBE-dotAmort+autresProd-autresChg;
+  const REX=EBIT+prodFin-chgFin,RN=REX+prodExcep+chgExcep+IS;
+  // Note : IS en France est généralement un produit (reprise) ou une charge
+  // Recalcul exact : RN = Total produits - Total charges
+  const totalProd=CA+autresProd+prodFin+prodExcep;
+  const totalChg=achats+chargesExt+impots+ms+dotAmort+autresChg+chgFin+chgExcep+(-IS);
+  const RN_exact=totalProd-totalChg;
+  const CAF=RN_exact+dotAmort;
+
+  // ══════════════════════════════════════════════════════════════
+  // RÉSULTAT NET — DÉRIVATION MATHÉMATIQUE UNIQUEMENT
+  // ══════════════════════════════════════════════════════════════
+  // RÈGLE ABSOLUE : on NE fait JAMAIS confiance au solde du compte 12x.
+  // Raison : les FEC provisoires (Pennylane, Sage, EBP...) contiennent
+  // en 12x soit 0, soit l'ancien résultat N-1 non clôturé.
+  // La seule valeur fiable est : RN = Actif - Passif_hors_résultat
+  // C'est une identité comptable garantie par la partie double.
+  const actifTotal_tmp = actiImmoNet+stocksB+creancesCliB+autresCreancesB+dispoB;
+  const passifTotal_excl12 = capitalB+reservesB+rAnB+subvB+provB+dettesFinB+fournissB+dettesSocB+dettesFixB+autresDettesB;
+  const rnB_final = actifTotal_tmp - passifTotal_excl12; // toujours correct
+  // Note : si le FEC a des écritures de clôture, rnB (12x) = rnB_final (idem)
+  // Si FEC provisoire, rnB (12x) est stale → on l'ignore et prend rnB_final
+
+  const cpTot = capitalB+reservesB+rAnB+rnB_final+subvB;
+  const actifTotal = actifTotal_tmp;
+  const passifTotal = cpTot+provB+dettesFinB+fournissB+dettesSocB+dettesFixB+autresDettesB;
+  const bilanEcart = Math.round((actifTotal-passifTotal)*100)/100; // doit être 0
+
+  const rnBilan = rnB_final;
+  const rnEcart = Math.abs(rnB) > 1 ? Math.abs(RN_exact-rnB_final)/Math.max(1,Math.abs(rnB_final)) : 0;
+
+  // Équilibre financier
+  const FRNG=(cpTot+provB+dettesFinB)-actiImmoNet;
+  const BFR=stocksB+creancesCliB+autresCreancesB-fournissB-dettesSocB-dettesFixB-autresDettesB;
+  const TN=dispoB;
+
+  // Ratios
+  const DSO=CA>0?Math.round(creancesCliB/(CA/360)):0;
+  const DPO=achats>0?Math.round(fournissB/(achats/360)):0;
+
+  // Top 15 fournisseurs par débit
+  const top15=Object.values(fourn).sort((a,b)=>b.d-a.d).slice(0,15)
+    .map(f=>({name:f.name,debit:Math.round(f.d),credit:Math.round(f.c),solde:Math.round(f.c-f.d)}));
+
+  // Mensuel
+  const caArr=Object.entries(caMonth).sort((a,b)=>a[0].localeCompare(b[0])).map(([mo,v])=>({mo,v:Math.round(v)}));
+  const chgArr=Object.entries(chgMonth).sort((a,b)=>a[0].localeCompare(b[0])).map(([mo,v])=>({mo,v:Math.round(v)}));
+  const hasCa=caArr.some(x=>x.v>100);
+
+  // Alertes
+  const alerts=[];
+  if(cpTot<0)alerts.push("⚠ Capitaux propres négatifs ("+Math.round(cpTot).toLocaleString("fr-FR")+"€)");
+  if(EBE<0)alerts.push("⚠ EBE négatif ("+Math.round(EBE).toLocaleString("fr-FR")+"€)");
+  if(CA>0&&ms/CA>0.5)alerts.push("⚠ Masse salariale > 50% CA ("+(ms/CA*100).toFixed(1)+"%)");
+  if(DSO>60)alerts.push("⚠ DSO élevé : "+DSO+"j");
+  if(FRNG<0)alerts.push("⚠ FRNG négatif — déséquilibre financier");
+  if(BFR>0&&CA>0&&BFR>CA*0.2)alerts.push("⚠ BFR élevé ("+(BFR/CA*100).toFixed(1)+"% du CA)");
+
+  return{
+    // CR
+    CA,achats,chargesExt,impots,salaires,chargesSoc,ms,dotAmort,
+    autresProd,autresChg,prodFin,chgFin,prodExcep,chgExcep,IS,
+    MB,EBE,EBIT,REX,RN:RN_exact,CAF,
+    rnBilan:rnB_final,rnEcart,DSO,DPO,
+    // Bilan actif
+    imoIncorpB,imoCorpB,imoFinB,imoAmortB,actiImmoNet,
+    stocksB,creancesCliB,autresCreancesB,dispoB,actifTotal,
+    // Bilan passif
+    capitalB,reservesB,rAnB,rnB:rnB_final,subvB,cpTot,
+    provB,dettesFinB,fournissB,dettesSocB,dettesFixB,autresDettesB,passifTotal,
+    bilanEcart,
+    // Équilibre
+    FRNG,BFR,TN,
+    // Tiers
+    top15,agedP,agedR,totAP,totAR,
+    // Mensuel
+    caArr,chgArr,hasCa,
+    alerts,comptesList
+  };
+}
+
+// ══════════════════════════════════════════
+// PROMPTS
+// ══════════════════════════════════════════
+function getSystemPrompt(){
+  const base=`Tu es expert-comptable Transaction Services cabinet KOPILOT, 15 ans d'expérience. Génère UNIQUEMENT du HTML brut commençant par <!DOCTYPE html>, sans aucun texte avant ni après, sans balises markdown.
+DESIGN SYSTEM OBLIGATOIRE — respecte à la lettre :
+• Chaque slide : div style="width:1280px;min-height:720px;background:#F4F6FB;display:flex;flex-direction:column;margin:0 auto;page-break-after:always;overflow:hidden"
+• HEADER : background:linear-gradient(135deg,#001259,#0A1E6E,#1A3BAA);height:72px;display:flex;align-items:center;padding:0 40px;justify-content:space-between — À GAUCHE : logo SVG + titre slide blanc 18px bold — À DROITE : chip entité #00C2CB
+• LOGO à placer dans chaque header (obligatoire) : <svg width="90" height="26" viewBox="0 0 110 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="6" fill="#00C2CB"/><path d="M8 8h6v7l6-7h7L19 17l9 7h-7l-6-7v7H8V8z" fill="#0A1E6E"/><text x="40" y="22" font-family="Segoe UI,system-ui,sans-serif" font-weight="800" font-size="15" fill="white" letter-spacing="-0.5">KOPILOT</text></svg>
+• CORPS : background:#F4F6FB;padding:28px 40px;flex:1
+• Cards blanches : background:white;border-radius:10px;padding:18px;box-shadow:0 2px 12px rgba(10,30,110,0.08)
+• KPI cards : border-top:3px solid (vert #22C55E si positif, rouge #EF4444 si négatif, amber #F59E0B si warn)
+• Tableaux : thead background:#0A1E6E;color:white — lignes alternées #EEF1FA/white — border-radius:8px sur le tableau
+• FOOTER : background:#0A1E6E;height:36px;display:flex;align-items:center;padding:0 40px;justify-content:space-between — "Confidentiel — Cabinet Kopilot" couleur rgba(255,255,255,0.5) 11px à gauche — numéro slide #00C2CB 11px bold à droite
+• Slides SÉPARATEUR navy : background:#0A1E6E;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative — numéro géant filigrane color:rgba(255,255,255,0.04);font-size:200px;font-weight:900;position:absolute — titre blanc 36px bold — sous-titre #00C2CB 16px
+• BILAN — RÈGLE ABSOLUE : la slide bilan est fournie pré-générée entre les balises BILAN_SLIDE_START et BILAN_SLIDE_END dans les données. Tu dois la copier EXACTEMENT telle quelle, sans modifier un seul chiffre, sans reformater, sans recalculer. Si tu changes quoi que ce soit dans cette slide, le rapport sera comptablement faux. Extrais le HTML entre les balises et insère-le à l'emplacement de la slide bilan.`;
+
+  const p=ST.profile;
+  const a=ST.answers;
+
+  const dirNote=a.retraitDir!=="Non"?`\nRETraitement dirigeant : ${a.retraitDir}. Calcule et affiche l'EBITDA retraité (salaire dirigeant normalisé soustrait du résultat pour le comparer au marché).`:"";
+  const ebitdaNote=a.ebitdaN==="Oui"?`\nEBITDA NORMATIF demandé : calcule l'excédent de rémunération dirigeant et présente l'EBITDA normatif avec le détail du retraitement sur une slide dédiée.`:"";
+  const porteurNote=`\nPorteur de projet : ${a.porteurType}. ${a.porteurType==="Holding/Société"?"Analyser les flux Holding↔OpCo, dividendes remontés, rémunération via la holding.":a.porteurType==="Mixte"?"Rémunération mixte salaire + dividendes : analyser l'optimisation sociale et fiscale.":"Rémunération uniquement via salaire : vérifier le ratio salaire/CA et les charges sociales."}`;
+  const extras=dirNote+ebitdaNote+porteurNote+(a.exercice?`\nExercice analysé : ${a.exercice}.`:"")+(a.commentaire?`\nCommentaire libre : ${a.commentaire}`:"");
+
+  if(p==="sel-dentaire")return base+`\nSEL DENTAIRE — 22 slides :
+1-Cover navy (entité, SIREN, exercice, date rapport) 2-Séparateur Partie 1 Exploitation 3-Executive Summary (8 KPIs : CA/EBE/RN/Tréso/MS/DSO/DPO/CAF + alertes code couleur) 4-CR complet (tous les postes de 70 à 69) 5-SIG waterfall SVG (VA→EBE→EBIT→REX→RN avec flèches et étiquettes) 6-Rétrocessions praticiens (compte 42110 nominatif si dispo Silae, sinon estimation % CA) 7-EBITDA${a.ebitdaN==="Oui"?" normatif (slide dédiée retraitement rémunération dirigeant)":""} 8-Structure charges camembert SVG (MS/ChargesExt/Impôts/Amort/Autres) 9-Séparateur Partie 2 Bilan & Équilibre 10-Bilan Actif/Passif (2 colonnes) 11-Équilibre FRNG/BFR/TN (3 cards colorées avec formules) 12-Flux trésorerie (CAF→ΔBFR→Invest→Financ→ΔTréso waterfall) 13-Séparateur Partie 3 RH & Tiers 14-Masse salariale (salaires 641/642 + charges 645-648 + taxes 631/633 — ratio MS/CA vs benchmark 35-45%) 15-Top 15 fournisseurs triés par débit 16-Balance âgée fournisseurs (4 tranches SVG) 17-Balance âgée clients (même structure) 18-Séparateur Partie 4 Activité 19-Activité mensuelle SVG (CA si dispo sinon charges) 20-Analyse sectorielle (CA/fauteuil benchmark 150-300k€/ETP, productivité praticiens) 21-Recommandations CT/MT/LT (3 colonnes colorées, 3 actions chacune) 22-Disclaimer
+${extras}`;
+
+  if(p==="centre-sante"){
+    const schema=a.schema||"1asso-1sas";
+    const asso1=a.nomAsso1||"Association 1";
+    const asso2=a.nomAsso2||"Association 2";
+    const sas=a.nomSas||"SAS de gestion";
+    const is2asso=schema==="2asso-1sas";
+
+    const structure=is2asso
+      ? `STRUCTURE GROUPE : 2 Associations + 1 SAS commune\n• ${asso1} (Asso 1) → flux vers ${sas}\n• ${asso2} (Asso 2) → flux vers ${sas}\n• ${sas} = société de gestion commune aux 2 associations\nFLUX : refacturations Asso1→SAS, Asso2→SAS, charges communes réparties. CA CONSOLIDÉ = CA Asso1 + CA Asso2 (hors interco).\nGroupe TVA : ${a.groupeTVA}`
+      : `STRUCTURE GROUPE : 1 Association + 1 SAS\n• ${asso1} (Asso) → flux vers ${sas} (SAS)\nCA CONSOLIDÉ = CA Asso uniquement. Groupe TVA : ${a.groupeTVA}`;
+
+    const retraitNote = a.retraitDirCDS!=="Non"
+      ? `\nRETraitement dirigeant : ${a.retraitDirCDS}${a.retraitDirMontant?" — montant : "+a.retraitDirMontant+"€/an":""}.`
+      : "";
+    const excessNote = a.excessRemu==="Oui"
+      ? `\nExcédent rémunération praticiens à normaliser${a.excessRemuMontant?" : "+a.excessRemuMontant+"€/an":""}.`
+      : "";
+    const leasingNote = a.leasing!=="Non"
+      ? `\nLeasing actif : ${a.leasing}. ${a.ebitdar==="Oui"?"Calculer et afficher EBITDAR (EBITDA + loyers de leasing).":""}`
+      : "";
+    const dotNote = a.dotationARS!=="Non" ? `\nDotation ARS : ${a.dotationARS} — l'isoler dans le CA et le commenter.` : "";
+    const stratNote = `\nObjectif analyse : ${a.objectifAnalyse||"Suivi annuel"}. Convention collective : ${a.conventionCol||"CC51"}.`;
+    const finessNote = a.finess ? `\nFINESS : ${a.finess}.` : "";
+
+    const extras_cds = retraitNote+excessNote+leasingNote+dotNote+stratNote+finessNote
+      +(a.porteurType?`\nPorteur : ${a.porteurType}.`:"")
+      +(a.commentaire?`\nCommentaire cabinet : ${a.commentaire}`:"");
+
+    const slides2asso=is2asso?`
+SLIDES SPÉCIFIQUES AU SCHÉMA 2 ASSO + 1 SAS :
+Slide 4 — Structure groupe : organigramme 3 entités (Asso1 + Asso2 → SAS commune), flux financiers, Groupe TVA si actif
+Slide 5 — Tableau comparatif Asso1 vs Asso2 : CA / MS / EBITDA / Tréso côte à côte + ratios croisés
+Slide 6 — CA consolidé des 2 asso (CPAM/PP/Mutuelles/ARS par asso ET consolidé)
+Slide 7 — Charges Asso1 avec flags INTERCO vers SAS
+Slide 8 — Charges Asso2 avec flags INTERCO vers SAS
+Slide 9 — Charges SAS (refacturations aux 2 asso, clé de répartition si connue)
+Slide 10 — Consolidation 3 entités : schéma visuel Asso1+Asso2+SAS → Groupe, élimination flux interco, résultat consolidé
+Slide 11 — CR consolidé waterfall SVG (CA Asso1+Asso2 → charges communes SAS → charges propres → EBITDA → RN)
+Slide 12 — EBITDA→EBITDAR par entité et consolidé
+Slide 22 — Synthèse Dettes CT : tableau à 4 colonnes Asso1 / Asso2 / SAS / Groupe`
+    :`SLIDES STANDARD 1 ASSO + 1 SAS — voir structure 27 slides ci-dessous`;
+
+    return base+`\nCENTRE DE SANTÉ — 27 slides — ${is2asso?"Schéma 2 Asso + 1 SAS":"Schéma 1 Asso + 1 SAS"}
+${structure}
+
+${slides2asso}
+
+STRUCTURE RAPPORT COMPLET 27 SLIDES :
+Partie 1 Performance (20 slides) :
+1-Cover (logos entités, date, exercice)
+2-Contexte groupe (FINESS/ARS/spécialité/effectif/forme juridique de chaque entité)
+3-Chiffres clés consolidés (8 KPIs : CA/EBITDA/RN/Tréso/MS/DSO/Dette nette/ratio MS-CA)
+4-Structure groupe (organigramme ${is2asso?"3 entités : "+asso1+", "+asso2+", "+sas:"2 entités : "+asso1+", "+sas}, flux financiers, Groupe TVA)
+5-${is2asso?"Comparatif "+asso1+" vs "+asso2+" (CA/MS/EBITDA côte à côte)":"Ratios vs benchmarks (MS/CA 55-70%, EBITDA 12-20%, DSO CPAM 7j mutuelles 10-30j)"}
+6-CA consolidé (CPAM/PP/Mutuelles/Subventions ARS — barres SVG mensuel${is2asso?" par asso + consolidé":""})
+7-Charges ${asso1} (MS/Conso/Loyers ${sas} INTERCO flagués/Externes/Taxe salaires — flags INTERCO/FAE/RÉEL)
+${is2asso?"8-Charges "+asso2+" (même structure que slide 7)":"8-Charges "+sas+" (leasing/services/refacturations interco)"}
+${is2asso?"9-Charges "+sas+" (refacturations aux 2 asso, clé de répartition)":"9-Consolidation (schéma visuel Asso+SAS→Groupe, élimination flux interco)"}
+10-${is2asso?"Consolidation 3 entités (schéma Asso1+Asso2+SAS→Groupe, éliminations interco)":"CR consolidé waterfall SVG"}
+11-CR consolidé waterfall SVG (CA→Charges→EBITDA→Amort→REX→RN avec étiquettes)
+12-EBITDA→EBITDAR (retraitement leasing, tableau comparatif${is2asso?" par entité + consolidé":""})
+13-Masse salariale globale (ratio MS/CA vs benchmark 55-70%)
+14-MS par spécialité Silae (chirurgiens-dentistes/médecins/kiné/assistantes/support — ETP/coût/ratio CA/ETP${is2asso?" par asso":""})
+15-Productivité praticiens (CA/ETP par pôle vs benchmark${is2asso?" — "+asso1+" vs "+asso2:""})
+16-Consommables (ratio conso/CA, prothèses/labo/conso dentaire)
+17-Charges externes détaillées
+18-BFR et trésorerie (DSO CPAM 7j mutuelles 10-30j, cycle cash)
+19-Endettement (leasing/emprunt/position nette, ratio DN/EBITDA)
+20-Conclusion stratégique (points forts / vigilances / leviers)
+Partie 2 Dettes CT (7 slides) :
+21-Cover Dettes CT
+22-Synthèse dettes (tableau ${is2asso?asso1+" / "+asso2+" / "+sas+" / Groupe":asso1+" / "+sas+" / Groupe"} : Fourn/Sociales/Fiscales/Total)
+23-Fournisseurs (top tiers + FAE 408 BLOC SÉPARÉ avec flag FAE + DPO)
+24-Dettes sociales (421/428/431/437/438)
+25-Dettes fiscales (IS / Taxe salaires 44870 ${is2asso?"TROIS ENTITÉS si Groupe TVA":"DEUX ENTITÉS si Groupe TVA"} / FPC 44863)
+26-Praticiens nominatifs (42110 par salarié + provisions 428600${is2asso?" — "+asso1+" et "+asso2:""})
+27-Synthèse et actions prioritaires
+
+RÈGLES STRICTES :
+• CA consolidé = CA ${is2asso?"Asso1 + Asso2":"Asso"} uniquement (exclure refacturations interco)
+• Taxe salaires 44870 dans ${is2asso?"3":"2"} entités si Groupe TVA
+• FAE 408 = bloc absolument SÉPARÉ avec flag FAE en rouge
+• Flags INTERCO sur tous les flux entre entités
+• Spécialité : ${a.specialite||"Pluridisciplinaire"} | Convention : ${a.conventionCol||"CC51"} | Honoraires : ${a.typeHonoraires||"Mixte"}
+${extras_cds}`;}
+
+
+  if(p==="pharmacie")return base+`\nPHARMACIE — 22 slides :
+1-Cover 2-Séparateur P1 3-Executive Summary 8 KPIs 4-CR complet 5-Marge brute par taux TVA (2.1%/10%/20% séparées, cible globale 28-32%) 6-SIG waterfall SVG 7-Structure charges camembert 8-Séparateur P2 9-Bilan 10-FRNG/BFR/TN 11-Stocks (DMS cible <45j, rotation) 12-Séparateur P3 13-Masse salariale 14-Top fournisseurs (répartiteurs / directs séparés) 15-Balance âgée fournisseurs 16-Balance âgée clients 17-Activité mensuelle SVG 18-Séparateur P4 19-Ratios sectoriels comparatifs (marge/DMS/MS/CA vs benchmarks officine) 20-Recommandations CT/MT/LT 21-Disclaimer${extras}`;
+
+  if(p==="audio")return base+`\nAUDIOPROTHÈSE — 20 slides :
+1-Cover 2-Séparateur P1 3-Executive Summary 8 KPIs 4-CR 5-SIG waterfall SVG 6-Structure charges camembert 7-Séparateur P2 8-Bilan 9-FRNG/BFR/TN 10-Séparateur P3 11-MS (audioprothésistes/support, ratio CA/ETP) 12-Mix remboursement (100% Santé/mutuelles/RAC — évolution réforme) 13-Top fournisseurs + redevances franchise séparées 14-Balance âgée fournisseurs et clients 15-Activité mensuelle SVG 16-Séparateur P4 17-Ratios sectoriels 18-Recommandations CT/MT/LT 19-Disclaimer${extras}`;
+
+  return base+`\nGÉNÉRIQUE — 22 slides :
+1-Cover navy 2-Sommaire 3-Séparateur Partie 1 Exploitation 4-Executive Summary (8 KPIs + alertes) 5-CR complet 6-SIG waterfall SVG 7-Structure charges camembert SVG 8-Séparateur Partie 2 Bilan 9-Bilan Actif/Passif 10-Équilibre FRNG/BFR/TN (3 cards) 11-Séparateur Partie 3 Cash & Paie 12-Flux trésorerie (CAF→ΔBFR→flux net waterfall) 13-Masse salariale détaillée (641/642/645-648/631-633) 14-Séparateur Partie 4 Tiers 15-Top 15 fournisseurs par débit 16-Balance âgée fournisseurs 17-Balance âgée clients 18-Séparateur Partie 5 Activité 19-Activité mensuelle SVG 20-Recommandations CT/MT/LT (3 colonnes, 3 actions chacune) 21-Disclaimer${extras}`;
+}
+
+function buildBilanSlide(ent, p){
+  if(!p)return "";
+  const gf=v=>Math.round(v||0).toLocaleString("fr-FR");
+  const pct=(a,b)=>b&&Math.abs(b)>0?((a/b)*100).toFixed(1)+"%":"—";
+  const N="#0A1E6E",C="#00C2CB",G="#22C55E",R="#EF4444";
+  const logoSvg=`<svg width="90" height="26" viewBox="0 0 110 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="6" fill="#00C2CB"/><path d="M8 8h6v7l6-7h7L19 17l9 7h-7l-6-7v7H8V8z" fill="#0A1E6E"/><text x="40" y="22" font-family="Segoe UI,system-ui,sans-serif" font-weight="800" font-size="15" fill="white" letter-spacing="-0.5">KOPILOT</text></svg>`;
+  const cpColor=p.cpTot>=0?G:R;
+  const row=(l,v,bold)=>`<tr style="background:transparent"><td style="padding:5px 12px;font-size:12px;color:#334155;border-bottom:1px solid #EEF1FA">${bold?`<strong>${l}</strong>`:l}</td><td style="padding:5px 12px;font-size:12px;font-weight:${bold?700:500};color:${bold?"#1E293B":"#475569"};text-align:right;border-bottom:1px solid #EEF1FA">${v} €</td></tr>`;
+  const rowH=(l,bg,col)=>`<tr style="background:${bg}"><td colspan="2" style="padding:6px 12px;font-size:11px;font-weight:700;color:${col};letter-spacing:0.5px;text-transform:uppercase">${l}</td></tr>`;
+
+  return`<!-- SLIDE BILAN — NE PAS MODIFIER LES CHIFFRES — COPIER VERBATIM -->
+<div style="width:1280px;min-height:720px;background:#F4F6FB;display:flex;flex-direction:column;margin:0 auto;page-break-after:always;overflow:hidden">
+  <div style="background:linear-gradient(135deg,#001259,${N},#1A3BAA);height:72px;display:flex;align-items:center;padding:0 40px;justify-content:space-between;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:16px">${logoSvg}<span style="color:white;font-size:18px;font-weight:700">Bilan — Actif & Passif</span></div>
+    <span style="color:${C};background:rgba(0,194,203,0.15);border:1px solid rgba(0,194,203,0.3);border-radius:20px;padding:4px 14px;font-size:11px;font-weight:600">${ent.name||"—"}</span>
+  </div>
+  <div style="flex:1;padding:24px 40px;display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+    <!-- ACTIF -->
+    <div style="background:white;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(10,30,110,0.07)">
+      <div style="background:${N};padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
+        <span style="color:white;font-weight:700;font-size:13px">ACTIF</span>
+        <span style="color:${C};font-weight:800;font-size:14px">${gf(p.actifTotal)} €</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse">
+        ${rowH("Actif immobilisé","#F8FAFF","#475569")}
+        ${row("Immobilisations incorporelles nettes",gf(p.imoIncorpB))}
+        ${row("Immobilisations corporelles nettes",gf(p.imoCorpB))}
+        ${row("Immobilisations financières",gf(p.imoFinB))}
+        ${row("Amortissements et dépréciations","- "+gf(p.imoAmortB))}
+        ${row("→ Total actif immobilisé NET",gf(p.actiImmoNet),true)}
+        ${rowH("Actif circulant","#F8FAFF","#475569")}
+        ${row("Stocks",gf(p.stocksB))}
+        ${row("Créances clients (41x)",gf(p.creancesCliB))}
+        ${row("Autres créances (40D, 42-49D)",gf(p.autresCreancesB))}
+        ${row("Trésorerie (5x)",gf(p.dispoB))}
+        ${row("→ Total actif circulant",gf(p.stocksB+p.creancesCliB+p.autresCreancesB+p.dispoB),true)}
+      </table>
+      <div style="background:#EEF1FA;padding:8px 16px;display:flex;justify-content:space-between">
+        <span style="font-size:13px;font-weight:800;color:${N}">TOTAL ACTIF</span>
+        <span style="font-size:13px;font-weight:800;color:${N}">${gf(p.actifTotal)} €</span>
+      </div>
+    </div>
+
+    <!-- PASSIF -->
+    <div style="background:white;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(10,30,110,0.07)">
+      <div style="background:${N};padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
+        <span style="color:white;font-weight:700;font-size:13px">PASSIF</span>
+        <span style="color:${C};font-weight:800;font-size:14px">${gf(p.passifTotal)} €</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse">
+        ${rowH("Capitaux propres","#F8FAFF","#475569")}
+        ${row("Capital social",gf(p.capitalB))}
+        ${row("Réserves",gf(p.reservesB))}
+        ${row("Report à nouveau",gf(p.rAnB))}
+        ${row("Résultat de l'exercice",gf(p.rnBilan))}
+        ${p.subvB?row("Subventions",gf(p.subvB)):""}
+        <tr style="background:rgba(${p.cpTot>=0?"34,197,94":"239,68,68"},0.06)"><td style="padding:7px 12px;font-size:12px;font-weight:700;color:${cpColor};border-bottom:1px solid #EEF1FA">→ Capitaux propres</td><td style="padding:7px 12px;font-size:13px;font-weight:800;color:${cpColor};text-align:right;border-bottom:1px solid #EEF1FA">${gf(p.cpTot)} €</td></tr>
+        ${rowH("Dettes","#F8FAFF","#475569")}
+        ${row("Provisions pour risques",gf(p.provB))}
+        ${row("Dettes financières (16x-17x)",gf(p.dettesFinB))}
+        ${row("Fournisseurs (40x)",gf(p.fournissB))}
+        ${row("Dettes sociales (42-43x)",gf(p.dettesSocB))}
+        ${row("Dettes fiscales (44x)",gf(p.dettesFixB))}
+        ${row("Autres dettes (45-49x)",gf(p.autresDettesB))}
+      </table>
+      <div style="background:#EEF1FA;padding:8px 16px;display:flex;justify-content:space-between">
+        <span style="font-size:13px;font-weight:800;color:${N}">TOTAL PASSIF</span>
+        <span style="font-size:13px;font-weight:800;color:${N}">${gf(p.passifTotal)} €</span>
+      </div>
+    </div>
+
+  </div>
+  <div style="background:${N};height:36px;display:flex;align-items:center;padding:0 40px;justify-content:space-between;flex-shrink:0">
+    <span style="color:rgba(255,255,255,0.5);font-size:11px">Confidentiel — Cabinet Kopilot</span>
+    <span style="color:${C};font-size:11px;font-weight:600">Bilan</span>
+  </div>
+</div>
+<!-- FIN SLIDE BILAN -->`;}
+
+function buildUserPrompt(){
+  const gf=v=>Math.round(v||0).toLocaleString("fr-FR");
+  const pct=(a,b)=>b?((a/b)*100).toFixed(1)+"%":"—";
+  const a=ST.answers;
+  let lines=["=== DONNÉES FINANCIÈRES KOPILOT ===","Profil : "+ST.profile+(ST.spec?" — "+ST.spec:"")];
+  lines.push("Retraitement dirigeant : "+a.retraitDir+" | EBITDA normatif : "+a.ebitdaN+" | Porteur : "+a.porteurType);
+  if(ST.profile==="centre-sante")lines.push("Groupe TVA : "+a.groupeTVA);
+  if(a.exercice)lines.push("Exercice : "+a.exercice);
+  lines.push("");
+  ST.ents.forEach(ent=>{
+    lines.push("--- "+ent.name+(ent.siren?" (SIREN "+ent.siren+")":"")+" ---");
+    const p=ST.parsed[ent.id];
+    if(p){
+      lines.push("--- COMPTE DE RÉSULTAT ---");
+      lines.push("CA: "+gf(p.CA)+"€ | Achats: "+gf(p.achats)+"€ | Charges ext: "+gf(p.chargesExt)+"€");
+      lines.push("Marge brute: "+gf(p.MB)+"€ ("+pct(p.MB,p.CA)+")");
+      lines.push("EBE: "+gf(p.EBE)+"€ ("+pct(p.EBE,p.CA)+") | Amort: "+gf(p.dotAmort)+"€ | EBIT: "+gf(p.EBIT)+"€");
+      lines.push("Prod fin: "+gf(p.prodFin)+"€ | Chg fin: "+gf(p.chgFin)+"€ | REX: "+gf(p.REX)+"€");
+      lines.push("Prod excep: "+gf(p.prodExcep)+"€ | Chg excep: "+gf(p.chgExcep)+"€ | IS: "+gf(p.IS)+"€");
+      lines.push("MS: "+gf(p.ms)+"€ ("+pct(p.ms,p.CA)+") sal: "+gf(p.salaires)+"€ ch.soc: "+gf(p.chargesSoc)+"€");
+      lines.push("RN CALCULÉ (flux CR): "+gf(p.RN)+"€ | RN OFFICIEL (compte 12x): "+gf(p.rnBilan)+"€");
+      lines.push("⚠ RÈGLE ABSOLUE : dans les slides, utiliser RN OFFICIEL="+gf(p.rnBilan)+"€ pour le bilan ET le CR. CAF="+gf(p.CAF)+"€");
+      lines.push("--- BILAN ACTIF (total: "+gf(p.actifTotal)+"€) PASSIF (total: "+gf(p.passifTotal)+"€) ---");
+      lines.push("Actif immobilisé net: "+gf(p.actiImmoNet)+"€ | Stocks: "+gf(p.stocksB)+"€ | Créances clients: "+gf(p.creancesCliB)+"€ | Autres créances: "+gf(p.autresCreancesB)+"€ | Tréso: "+gf(p.dispoB)+"€");
+      lines.push("CP: "+gf(p.cpTot)+"€ (Capital: "+gf(p.capitalB)+"€ Réserves: "+gf(p.reservesB)+"€ RAN: "+gf(p.rAnB)+"€ RN: "+gf(p.rnBilan)+"€)");
+      lines.push("Dettes fin: "+gf(p.dettesFinB)+"€ | Fourn: "+gf(p.fournissB)+"€ | Sociales: "+gf(p.dettesSocB)+"€ | Fiscales: "+gf(p.dettesFixB)+"€ | Autres: "+gf(p.autresDettesB)+"€");
+      lines.push("✓ ACTIF=PASSIF="+gf(p.actifTotal)+"€ — GARANTI PAR LE SYSTÈME");
+      lines.push("");
+      lines.push("⚠⚠⚠ SLIDE BILAN PRÉ-GÉNÉRÉE — COPIER VERBATIM SANS MODIFICATION ⚠⚠⚠");
+      lines.push("Pour la slide Bilan Actif/Passif, insère EXACTEMENT ce bloc HTML (ne modifie aucun chiffre) :");
+      lines.push("```BILAN_SLIDE_START```");
+      lines.push(buildBilanSlide(ent, p));
+      lines.push("```BILAN_SLIDE_END```");
+      lines.push("");
+      lines.push("--- ÉQUILIBRE FINANCIER ---");
+      lines.push("FRNG: "+gf(p.FRNG)+"€ | BFR: "+gf(p.BFR)+"€ | TN: "+gf(p.TN)+"€");
+      lines.push("DSO: "+p.DSO+"j | DPO: "+p.DPO+"j");
+      lines.push("Alertes: "+(p.alerts.length?p.alerts.join(" | "):"Aucune"));
+      if(p.hasCa)lines.push("CA mensuel: "+p.caArr.map(m=>m.mo+":"+gf(m.v)).join(" "));
+      else lines.push("CA mensuel: NON DISPONIBLE — utiliser charges mensuelles comme proxy d'activité");
+      if(!p.hasCa&&p.chgArr.length)lines.push("Charges mensuelles: "+p.chgArr.map(m=>m.mo+":"+gf(m.v)).join(" "));
+      lines.push("Top 5 fourn (débit): "+p.top15.slice(0,5).map(f=>f.name+" "+gf(f.debit)+"€").join(", "));
+      lines.push("Âgé fourn "+gf(p.totAP)+"€ → 0-30j:"+gf(p.agedP["0-30"])+" 30-60j:"+gf(p.agedP["30-60"])+" 60-90j:"+gf(p.agedP["60-90"])+" >90j:"+gf(p.agedP[">90"]));
+      lines.push("Âgé clients "+gf(p.totAR)+"€ → 0-30j:"+gf(p.agedR["0-30"])+" 30-60j:"+gf(p.agedR["30-60"])+" 60-90j:"+gf(p.agedR["60-90"])+" >90j:"+gf(p.agedR[">90"]));
+    }else{
+      lines.push("[Pas de FEC — mode DÉMO : générer données fictives réalistes cohérentes avec le profil + filigrane DÉMO en rouge sur chaque slide]");
+    }
+    // Fichiers mono-fichiers
+    ["silae","balance","gl"].forEach(sid=>{
+      const f=ST.files[ent.id+"__"+sid];
+      if(f&&f.data&&f.type==="text")lines.push(sid.toUpperCase()+" ("+f.name+"): "+f.data.slice(0,3000)+(f.data.length>3000?"\n[tronqué]":""));
+    });
+    // Fichiers multi (bilan, emprunts) — on concatène tous
+    ["bilan","emprunts"].forEach(sid=>{
+      const keys=Object.keys(ST.files).filter(k=>k.startsWith(ent.id+"__"+sid+"__")||k===ent.id+"__"+sid);
+      keys.forEach((k,idx)=>{
+        const f=ST.files[k];
+        if(f&&f.data&&f.type==="text")lines.push(sid.toUpperCase()+(keys.length>1?" #"+(idx+1):"")+" ("+f.name+"): "+f.data.slice(0,3000)+(f.data.length>3000?"\n[tronqué]":""));
+      });
+    });
+    lines.push("");
+  });
+  if(a.commentaire)lines.push("Commentaire cabinet : "+a.commentaire+"\n");
+  lines.push("Génère maintenant le rapport HTML COMPLET avec TOUTES les slides. Commence DIRECTEMENT par <!DOCTYPE html>.");
+  return lines.join("\n");
+}
+
+// ══════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════
+function render(){
+  renderStepper();
+  const c=document.getElementById("content");
+  if(ST.step===0)c.innerHTML=renderStep0();
+  else if(ST.step===1)c.innerHTML=renderStep1();
+  else if(ST.step===2)c.innerHTML=renderStep2();
+  else if(ST.step===3)c.innerHTML=renderStep3();
+  else if(ST.step===4)c.innerHTML=renderLoading();
+  else if(ST.step===5){renderStep5();return;}
+  bindEvents();
+}
+
+function renderStepper(){
+  const el=document.getElementById("stepper");
+  if(ST.step>=4){el.innerHTML="";return;}
+  el.innerHTML=STEPS.map((s,i)=>{
+    const done=ST.step>i,active=ST.step===i;
+    const bg=done?"var(--G)":active?"var(--B)":"rgba(255,255,255,0.07)";
+    const col=(done||active)?"white":"rgba(255,255,255,0.2)";
+    return`<div class="step-col"><div class="step-dot" style="background:${bg};color:${col}">${done?"✓":i+1}</div><div class="step-label" style="color:${done?"var(--G)":active?"white":"rgba(255,255,255,0.2)"}">${s}</div></div>`+(i<STEPS.length-1?`<div class="step-line" style="background:${ST.step>i?"var(--G)":"rgba(255,255,255,0.07)"}"></div>`:"");
+  }).join("");
+}
+
+function renderStep0(){
+  const a=ST.answers;
+  return`<div class="card">
+    <div class="card-title">Profil sectoriel</div>
+    <div class="card-sub">Le rapport et l'analyse s'adaptent au secteur.</div>
+    <div class="g3">${PROFILES.map(p=>`<div class="prof-card ${ST.profile===p.id?"active":""}" data-profile="${p.id}">
+      <span class="prof-icon">${p.icon}</span>
+      <div><div class="prof-name">${p.label}</div><div class="prof-desc">${p.desc}</div></div>
+    </div>`).join("")}</div>
+
+    ${ST.profile==="centre-sante"?`
+    <div style="margin-top:20px;padding:18px;background:rgba(0,194,203,0.06);border:1px solid rgba(0,194,203,0.2);border-radius:10px">
+      <div style="font-size:11px;font-weight:700;color:var(--C);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px">🏥 Structure du groupe</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:10px">Schéma juridique</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+        <div class="schema-card" data-schema="1asso-1sas" style="flex:1;min-width:180px;background:${a.schema==="1asso-1sas"?"rgba(0,194,203,0.15)":"rgba(255,255,255,0.03)"};border:2px solid ${a.schema==="1asso-1sas"?"var(--C)":"rgba(255,255,255,0.08)"};border-radius:10px;padding:14px;cursor:pointer">
+          <div style="font-size:22px;margin-bottom:6px">🏥 → 🏢</div>
+          <div style="font-size:13px;font-weight:700;color:white">1 Association + 1 SAS</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px">1 centre → 1 société de gestion</div>
+        </div>
+        <div class="schema-card" data-schema="2asso-1sas" style="flex:1;min-width:180px;background:${a.schema==="2asso-1sas"?"rgba(0,194,203,0.15)":"rgba(255,255,255,0.03)"};border:2px solid ${a.schema==="2asso-1sas"?"var(--C)":"rgba(255,255,255,0.08)"};border-radius:10px;padding:14px;cursor:pointer">
+          <div style="font-size:22px;margin-bottom:6px">🏥🏥 → 🏢</div>
+          <div style="font-size:13px;font-weight:700;color:white">2 Associations + 1 SAS commune</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px">2 centres → même société de gestion</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:${a.schema==="2asso-1sas"?"1fr 1fr 1fr":"1fr 1fr"};gap:10px">
+        <div><label class="lbl">Nom Association 1</label><input class="inp schema-name" data-field="nomAsso1" placeholder="Ex : CDS Arnouville" value="${a.nomAsso1||""}"></div>
+        ${a.schema==="2asso-1sas"?`<div><label class="lbl">Nom Association 2</label><input class="inp schema-name" data-field="nomAsso2" placeholder="Ex : CDS Louviers" value="${a.nomAsso2||""}"></div>`:""}
+        <div><label class="lbl">Nom SAS de gestion</label><input class="inp schema-name" data-field="nomSas" placeholder="Ex : GIE Santé Services" value="${a.nomSas||""}"></div>
+      </div>
+    </div>`:""}
+
+    <div class="flex-between" style="justify-content:flex-end;margin-top:20px">
+      <button class="btn" id="btn-next-0" ${!ST.profile?"disabled":""}>Continuer →</button>
+    </div>
+  </div>`;
+}
+
+function renderStep1(){
+  return`<div class="card">
+    <div class="card-title">Sociétés à analyser</div>
+    <div class="card-sub">Le SIREN enrichit automatiquement via Pappers.</div>
+    ${ST.ents.map((ent,i)=>`<div class="ent-block">
+      <div class="ent-row">
+        <div style="flex:2;min-width:150px"><label class="lbl">Raison sociale</label><input class="inp" data-ent="${i}" data-field="name" placeholder="Cabinet Dupont SELARL…" value="${ent.name}"></div>
+        <div style="flex:1;min-width:100px"><label class="lbl">SIREN</label><input class="inp siren-inp" data-ent="${i}" placeholder="9 chiffres" maxlength="9" value="${ent.siren}"></div>
+        ${ST.ents.length>1?`<div style="flex-shrink:0;align-self:flex-end"><button class="btn-g btn-sm del-ent" data-del="${i}" style="color:var(--R);border-color:rgba(239,68,68,0.2)">✕</button></div>`:""}
+      </div>
+      ${ent.pappers?`<div class="pappers-info">
+        ✓ <strong>${ent.pappers.denomination||ent.pappers.nom_entreprise||ent.pappers.nom||""}</strong>
+        ${ent.pappers.forme_juridique?" — "+ent.pappers.forme_juridique:""}
+        ${ent.pappers.code_naf?" — NAF "+ent.pappers.code_naf:""}
+        ${ent.pappers.siege?.ville?" — "+ent.pappers.siege.ville:""}
+      </div>`:""}
+    </div>`).join("")}
+    <button class="btn-g btn-sm" id="add-ent" style="margin-bottom:16px">+ Ajouter une entité</button>
+    <div class="flex-between">
+      <button class="btn-g" id="btn-back-1">← Retour</button>
+      <button class="btn" id="btn-next-1" ${!ST.ents.some(e=>e.name)?"disabled":""}>Continuer →</button>
+    </div>
+  </div>`;
+}
+
+function renderStep2(){
+  const ent=ST.ents[ST.activeEnt];
+  const p=ST.parsed[ent.id];
+  const gf=v=>v==null?'—':Math.round(v).toLocaleString("fr-FR")+" €";
+  const pct=(a,b)=>b&&b!==0?((a/b)*100).toFixed(1)+"%":"—";
+  const rowG=(l,v,ok)=>`<tr><td style="padding:5px 10px;font-size:12px;color:rgba(255,255,255,0.6)">${l}</td><td style="padding:5px 10px;font-size:12px;font-weight:600;color:${ok===false?"var(--R)":ok===true?"var(--G)":"white"};text-align:right">${v}</td></tr>`;
+
+  return`<div class="card">
+    <div class="card-title">Import fichiers</div>
+    <div class="card-sub">Le FEC est requis pour l'analyse. Les autres enrichissent le rapport.</div>
+    ${ST.ents.length>1?`<div class="ent-tabs">${ST.ents.map((e,i)=>`<button class="btn-g ${ST.activeEnt===i?"active":""} ent-tab" data-ent-tab="${i}" style="${ST.activeEnt===i?"border-color:var(--B);color:white;font-weight:700":""}">${e.name||"Entité "+(i+1)}</button>`).join("")}</div>`:""}
+
+    <div class="g3">${FSLOTS.map(slot=>{
+      const isMulti=slot.id==="emprunts"||slot.id==="bilan";
+      const entId=ent.id;
+
+      if(isMulti){
+        // Slots multi-fichiers : liste des fichiers chargés + bouton ajouter
+        const keys=Object.keys(ST.files).filter(k=>k.startsWith(entId+"__"+slot.id+"__"));
+        return`<div style="background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:18px">${slot.icon}</span>
+            <span style="font-size:11px;font-weight:600;color:white">${slot.label}</span>
+            <span style="font-size:9px;color:var(--C);background:rgba(0,194,203,0.12);padding:2px 7px;border-radius:10px">multi</span>
+          </div>
+          ${keys.length===0?`<div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:8px">Aucun fichier</div>`:""}
+          ${keys.map(k=>`<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.2);border-radius:6px;padding:5px 8px">
+            <span style="font-size:10px;color:var(--G);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ST.files[k].name}</span>
+            <button class="del-file" data-key="${k}" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:var(--R);border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;flex-shrink:0">✕</button>
+          </div>`).join("")}
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:6px 10px;border:1px dashed rgba(255,255,255,0.15);border-radius:7px;font-size:11px;color:rgba(255,255,255,0.5)">
+            <input type="file" class="file-inp-multi" data-slot="${slot.id}" data-entid="${entId}" style="display:none">
+            <span>+ Ajouter un fichier</span>
+          </label>
+        </div>`;
+      } else {
+        // Slots mono-fichier
+        const key=entId+"__"+slot.id;
+        const loaded=ST.files[key];
+        return`<div style="background:${loaded?"rgba(34,197,94,0.07)":"rgba(255,255,255,0.025)"};border:1px ${loaded?"solid rgba(34,197,94,0.3)":"dashed rgba(255,255,255,0.1)"};border-radius:10px;padding:14px">
+          <div class="file-slot-click" data-slot="${slot.id}" style="cursor:pointer;text-align:center">
+            <input type="file" id="fi-${slot.id}" class="file-inp" data-slot="${slot.id}" style="display:none">
+            <div style="font-size:20px;margin-bottom:4px">${slot.icon}</div>
+            <div style="font-size:11px;font-weight:600;color:white;margin-bottom:2px">${slot.label}${slot.required?`<span style="color:var(--R)"> *</span>`:""}</div>
+            <div style="font-size:10px;color:${loaded?"var(--G)":"rgba(255,255,255,0.3)"};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%">${loaded?loaded.name:"Cliquer pour charger"}</div>
+          </div>
+          ${loaded?`<div style="display:flex;justify-content:center;margin-top:7px">
+            <button class="del-file" data-key="${key}" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:var(--R);border-radius:5px;padding:3px 10px;font-size:10px;cursor:pointer">✕ Supprimer</button>
+          </div>`:""}
+        </div>`;
+      }
+    }).join("")}</div>
+
+    ${p?`<div style="margin-top:18px">
+      <div style="font-size:11px;color:var(--C);font-weight:700;margin-bottom:12px;letter-spacing:1px;text-transform:uppercase">✓ FEC PARSÉ — Vérification avant génération</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
+        ${[
+          {l:"CA",v:gf(p.CA),c:"var(--G)"},
+          {l:"EBE",v:gf(p.EBE)+" ("+pct(p.EBE,p.CA)+")",c:p.EBE>0?"var(--G)":"var(--R)"},
+          {l:"Résultat net (12x)",v:gf(p.rnBilan),c:p.rnBilan>0?"var(--G)":"var(--R)"},
+        ].map(k=>`<div class="kpi-card" style="border-color:${k.c}"><div class="kpi-label">${k.l}</div><div class="kpi-val" style="color:${k.c};font-size:13px">${k.v}</div></div>`).join("")}
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+
+        <!-- ACTIF -->
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;overflow:hidden">
+          <div style="background:rgba(59,130,246,0.15);padding:8px 12px;font-size:11px;font-weight:700;color:var(--B);letter-spacing:0.5px">ACTIF — ${gf(p.actifTotal)}</div>
+          <table style="width:100%;border-collapse:collapse">
+            ${rowG("Immo incorporelles nettes",gf(p.imoIncorpB))}
+            ${rowG("Immo corporelles nettes",gf(p.imoCorpB))}
+            ${rowG("Immo financières",gf(p.imoFinB))}
+            ${rowG("(dont amort cumulés)","-"+gf(p.imoAmortB))}
+            ${rowG("→ Actif immobilisé NET",gf(p.actiImmoNet))}
+            ${rowG("Stocks",gf(p.stocksB))}
+            ${rowG("Créances clients (41x)",gf(p.creancesCliB))}
+            ${rowG("Autres créances (40D,42-49D)",gf(p.autresCreancesB))}
+            ${rowG("Trésorerie (5x)",gf(p.dispoB))}
+          </table>
+          <div style="padding:7px 12px;font-size:12px;font-weight:700;border-top:1px solid rgba(255,255,255,0.1);color:var(--B)">TOTAL ACTIF : ${gf(p.actifTotal)}</div>
+        </div>
+
+        <!-- PASSIF -->
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;overflow:hidden">
+          <div style="background:rgba(0,194,203,0.12);padding:8px 12px;font-size:11px;font-weight:700;color:var(--C);letter-spacing:0.5px">PASSIF — ${gf(p.passifTotal)}</div>
+          <table style="width:100%;border-collapse:collapse">
+            ${rowG("Capital (101-105)",gf(p.capitalB))}
+            ${rowG("Réserves (106-107)",gf(p.reservesB))}
+            ${rowG("Report à nouveau (11x)",gf(p.rAnB))}
+            ${rowG("Résultat (12x)",gf(p.rnBilan))}
+            ${rowG("Subventions (13x)",gf(p.subvB))}
+            ${rowG("→ Capitaux propres",gf(p.cpTot))}
+            ${rowG("Provisions (15x)",gf(p.provB))}
+            ${rowG("Dettes fin (16x-17x+découv)",gf(p.dettesFinB))}
+            ${rowG("Fournisseurs (40x créd.)",gf(p.fournissB))}
+            ${rowG("Dettes sociales (42-43x)",gf(p.dettesSocB))}
+            ${rowG("Dettes fiscales (44x)",gf(p.dettesFixB))}
+            ${rowG("Autres dettes (45-49x)",gf(p.autresDettesB))}
+          </table>
+          <div style="padding:7px 12px;font-size:12px;font-weight:700;border-top:1px solid rgba(255,255,255,0.1);color:var(--C)">TOTAL PASSIF : ${gf(p.passifTotal)}</div>
+        </div>
+
+      </div>
+
+      <!-- ÉCART -->
+      <div style="margin-top:10px;padding:10px 14px;border-radius:8px;background:${Math.abs(p.bilanEcart)<2?"rgba(34,197,94,0.1)":"rgba(239,68,68,0.1)"};border:1px solid ${Math.abs(p.bilanEcart)<2?"rgba(34,197,94,0.3)":"rgba(239,68,68,0.3)"}">
+        <span style="font-size:12px;font-weight:700;color:${Math.abs(p.bilanEcart)<2?"var(--G)":"var(--R)"}">
+          ${Math.abs(p.bilanEcart)<2?"✓ Bilan équilibré":"⚠ Écart : "+gf(p.bilanEcart)+" — comparez avec votre plaquette et signalez les comptes manquants"}
+        </span>
+      </div>
+
+      <!-- DEBUG COMPTES -->
+      <details style="margin-top:12px">
+        <summary style="cursor:pointer;font-size:11px;color:rgba(255,255,255,0.5);padding:6px 0">🔍 Voir tous les comptes parsés (diagnostic)</summary>
+        <div style="margin-top:8px;max-height:300px;overflow-y:auto;background:rgba(0,0,0,0.3);border-radius:8px">
+          <table style="width:100%;border-collapse:collapse;font-size:10px">
+            <thead><tr style="background:#0A1E6E;position:sticky;top:0">
+              <th style="padding:5px 8px;text-align:left;color:rgba(255,255,255,0.7)">Compte</th>
+              <th style="padding:5px 8px;text-align:right;color:rgba(255,255,255,0.7)">Débit</th>
+              <th style="padding:5px 8px;text-align:right;color:rgba(255,255,255,0.7)">Crédit</th>
+              <th style="padding:5px 8px;text-align:right;color:rgba(255,255,255,0.7)">Solde</th>
+              <th style="padding:5px 8px;text-align:left;color:rgba(255,255,255,0.7)">Catégorie</th>
+            </tr></thead>
+            <tbody>${p.comptesList.sort((a,b)=>a.cpt.localeCompare(b.cpt)).map((c,i)=>`
+              <tr style="background:${i%2===0?"rgba(255,255,255,0.02)":"transparent"}">
+                <td style="padding:4px 8px;color:var(--C);font-family:monospace">${c.cpt}</td>
+                <td style="padding:4px 8px;text-align:right;color:rgba(255,255,255,0.5)">${c.debit.toLocaleString("fr-FR")}</td>
+                <td style="padding:4px 8px;text-align:right;color:rgba(255,255,255,0.5)">${c.credit.toLocaleString("fr-FR")}</td>
+                <td style="padding:4px 8px;text-align:right;font-weight:600;color:${c.solde>=0?"rgba(34,197,94,0.9)":"rgba(239,68,68,0.9)"}">${c.solde.toLocaleString("fr-FR")}</td>
+                <td style="padding:4px 8px;color:rgba(255,255,255,0.5);font-size:9px">${c.categorie}</td>
+              </tr>`).join("")}
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      ${p.alerts.map(a=>`<div class="alert" style="margin-top:6px">${a}</div>`).join("")}
+    </div>`:""}
+
+    <div class="flex-between">
+      <button class="btn-g" id="btn-back-2">← Retour</button>
+      <button class="btn" id="btn-next-2">Continuer →</button>
+    </div>
+  </div>`;
+}
+
+function renderStep3(){
+  const p=ST.profile;
+  const a=ST.answers;
+  const opts=(field,choices)=>choices.map(c=>`<span class="q-opt ${a[field]===c?"sel":""}" data-field="${field}" data-val="${c}">${c}</span>`).join("");
+  return`<div class="card">
+    <div class="card-title">Paramètres d'analyse</div>
+    <div class="card-sub">Ces informations affinent le rapport et les calculs financiers.</div>
+
+    <div class="q-section">
+      <div class="q-section-title">📋 Informations générales</div>
+      <div class="q-block">
+        <label class="lbl">Exercice analysé</label>
+        <input class="inp" id="exercice-inp" placeholder="Ex : 2024" value="${a.exercice}" style="max-width:180px">
+      </div>
+      <div class="q-block">
+        <span class="q-label">Porteur de projet / structure de rémunération du dirigeant</span>
+        <div class="q-options">${opts("porteurType",["Salarié","Holding/Société","Mixte"])}</div>
+      </div>
+    </div>
+
+    ${p!=="centre-sante"?`<div class="q-section">
+      <div class="q-section-title">💼 Retraitement dirigeant</div>
+      <div class="q-block">
+        <span class="q-label">Retraitement de la rémunération du dirigeant ?</span>
+        <div class="q-options">${opts("retraitDir",["Non","Oui — rémunération en salaire","Oui — rémunération via holding","Oui — rémunération mixte"])}</div>
+      </div>
+      <div class="q-block">
+        <span class="q-label">Afficher l'EBITDA normatif dans le rapport ?</span>
+        <div class="q-options">${opts("ebitdaN",["Non","Oui"])}</div>
+      </div>
+    </div>`:""}
+
+    ${p==="centre-sante"?`
+    <div class="q-section">
+      <div class="q-section-title">🏥 Contexte Centre de Santé</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <div>
+          <label class="lbl">Spécialité principale</label>
+          <select class="inp q-select" data-field="specialite">
+            ${["Pluridisciplinaire","Dentaire","Médecine générale","Kiné / Réed.","Ophtalmologie","Mixte médico-dentaire"].map(v=>`<option value="${v}" ${a.specialite===v?"selected":""}>${v}</option>`).join("")}
+          </select>
+        </div>
+        <div>
+          <label class="lbl">N° FINESS (optionnel)</label>
+          <input class="inp q-text" data-field="finess" placeholder="Ex : 950012345" value="${a.finess||""}">
+        </div>
+      </div>
+
+      <div class="q-block">
+        <span class="q-label">Convention collective applicable</span>
+        <div class="q-options">${opts("conventionCol",["CC51 (FEHAP)","CC66 (SOP)","CCN Centres de Santé","Autre"])}</div>
+      </div>
+
+      <div class="q-block">
+        <span class="q-label">Groupe TVA actif (Asso + SAS sur même périmètre TVA) ?</span>
+        <div class="q-options">${opts("groupeTVA",["Non","Oui"])}</div>
+      </div>
+
+      <div class="q-block">
+        <span class="q-label">Type d'honoraires pratiqués</span>
+        <div class="q-options">${opts("typeHonoraires",["CPAM uniquement (secteur 1)","Mixte CPAM + dépassements","Secteur 2 / dépassements libres","Optique / audio 100% Santé"])}</div>
+      </div>
+
+      <div class="q-block">
+        <span class="q-label">Dotation ou subvention ARS reçue ?</span>
+        <div class="q-options">${opts("dotationARS",["Non","Oui — CAQES","Oui — IPDS","Oui — autre dotation"])}</div>
+      </div>
+    </div>
+
+    <div class="q-section">
+      <div class="q-section-title">💼 Retraitement & Normalisation EBITDA</div>
+
+      <div class="q-block">
+        <span class="q-label">Retraitement de la rémunération du dirigeant / DG ?</span>
+        <div class="q-options">${opts("retraitDirCDS",["Non","Oui — salaire DG à normaliser","Oui — gérance via SAS","Oui — rémunération mixte salaire + dividendes"])}</div>
+      </div>
+
+      ${a.retraitDirCDS!=="Non"?`<div class="q-block">
+        <label class="lbl">Montant rémunération dirigeant à retraiter (€/an)</label>
+        <input class="inp q-text" data-field="retraitDirMontant" placeholder="Ex : 120000" value="${a.retraitDirMontant||""}" style="max-width:200px">
+      </div>`:""}
+
+      <div class="q-block">
+        <span class="q-label">Excédent de rémunération praticiens à normaliser pour EBITDA normatif ?</span>
+        <div class="q-options">${opts("excessRemu",["Non","Oui"])}</div>
+      </div>
+
+      ${a.excessRemu==="Oui"?`<div class="q-block">
+        <label class="lbl">Montant excédent rémunération praticiens (€/an)</label>
+        <input class="inp q-text" data-field="excessRemuMontant" placeholder="Ex : 80000" value="${a.excessRemuMontant||""}" style="max-width:200px">
+      </div>`:""}
+
+      <div class="q-block">
+        <span class="q-label">Contrats de leasing / crédit-bail actifs ? (retraitement EBITDA → EBITDAR)</span>
+        <div class="q-options">${opts("leasing",["Non","Oui — matériel médical","Oui — immobilier","Oui — mixte matériel + immo"])}</div>
+      </div>
+
+      <div class="q-block">
+        <span class="q-label">Afficher l'EBITDAR (EBITDA retraité leasing) dans le rapport ?</span>
+        <div class="q-options">${opts("ebitdar",["Non","Oui"])}</div>
+      </div>
+    </div>
+
+    <div class="q-section">
+      <div class="q-section-title">🎯 Contexte stratégique</div>
+
+      <div class="q-block">
+        <span class="q-label">Porteur de projet — structure de rémunération</span>
+        <div class="q-options">${opts("porteurType",["Salarié (DG salarié de l'Asso)","Gérant SAS","Holding / société de gestion","Mixte"])}</div>
+      </div>
+
+      <div class="q-block">
+        <span class="q-label">Objectif de l'analyse ?</span>
+        <div class="q-options">
+          ${["Suivi annuel","Projet de cession","Levée de fonds","Refinancement bancaire","Diagnostic préalable ouverture","Autre"].map(v=>`<span class="q-opt ${(a.objectifAnalyse||"Suivi annuel")===v?"sel":""}" data-field="objectifAnalyse" data-val="${v}">${v}</span>`).join("")}
+        </div>
+      </div>
+
+      <div class="q-block">
+        <span class="q-label">Schéma juridique du groupe</span>
+        <div class="q-options">
+          <span class="q-opt ${a.schema==="1asso-1sas"?"sel":""}" data-field="schema" data-val="1asso-1sas">1 Asso + 1 SAS</span>
+          <span class="q-opt ${a.schema==="2asso-1sas"?"sel":""}" data-field="schema" data-val="2asso-1sas">2 Asso + 1 SAS commune</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:${a.schema==="2asso-1sas"?"1fr 1fr 1fr":"1fr 1fr"};gap:10px;margin-top:10px">
+        <div><label class="lbl">Nom Association 1</label><input class="inp schema-name" data-field="nomAsso1" placeholder="CDS Arnouville" value="${a.nomAsso1||""}"></div>
+        ${a.schema==="2asso-1sas"?`<div><label class="lbl">Nom Association 2</label><input class="inp schema-name" data-field="nomAsso2" placeholder="CDS Louviers" value="${a.nomAsso2||""}"></div>`:""}
+        <div><label class="lbl">Nom SAS</label><input class="inp schema-name" data-field="nomSas" placeholder="GIE Santé Services" value="${a.nomSas||""}"></div>
+      </div>
+    </div>`:""}
+
+    ${p==="pharmacie"?`<div class="q-section">
+      <div class="q-section-title">💊 Spécificités Pharmacie</div>
+      <div class="q-block">
+        <span class="q-label">Type d'approvisionnement principal</span>
+        <div class="q-options">${opts("typeHonoraires",["Répartiteurs uniquement","Directs + répartiteurs","Majorité directs"])}</div>
+      </div>
+    </div>`:""}
+
+    ${p==="sel-dentaire"?`<div class="q-section">
+      <div class="q-section-title">🦷 Spécificités SEL Dentaire</div>
+      <div class="q-block">
+        <span class="q-label">Type d'exercice</span>
+        <div class="q-options">${opts("typeHonoraires",["Cabinet solo","Cabinet de groupe","Franchise / réseau"])}</div>
+      </div>
+    </div>`:""}
+
+    <div class="q-section">
+      <div class="q-section-title">💬 Commentaire libre</div>
+      <div class="q-block">
+        <textarea class="inp" id="comment-inp" placeholder="Ex : Projet de cession en cours, refinancement prévu, croissance externe envisagée, points d'attention particuliers…">${a.commentaire}</textarea>
+      </div>
+    </div>
+
+    ${ST.error?`<div class="error-box">⚠ ${ST.error}</div>`:""}
+    <div class="flex-between">
+      <button class="btn-g" id="btn-back-3">← Retour</button>
+      <button class="btn" id="btn-generate">🚀 Générer le rapport</button>
+    </div>
+  </div>`;
+}
+
+function renderLoading(){
+  return`<div class="card load-wrap">
+    <div class="load-icon">⚙️</div>
+    <h2 style="font-size:17px;font-weight:700;color:white;margin-bottom:6px">Génération en cours…</h2>
+    <p style="font-size:12px;color:rgba(255,255,255,0.4)">Claude génère votre rapport, cela peut prendre 30 à 90 secondes.</p>
+    <div class="progress-bar"><div class="progress-fill" id="prog" style="width:8%"></div></div>
+    <div style="font-size:11px;color:var(--C);margin-top:6px" id="prog-msg">Préparation des données…</div>
+  </div>`;
+}
+
+function renderStep5(){
+  document.getElementById("stepper").innerHTML="";
+  const c=document.getElementById("content");
+  c.innerHTML=`
+    <div class="tabs">
+      <button class="btn-g tab-btn ${ST.tab==="rapport"?"active":""}" data-tab="rapport">📄 Rapport</button>
+      <button class="btn-g tab-btn ${ST.tab==="ia"?"active":""}" data-tab="ia">🤖 Assistant IA</button>
+      <div style="margin-left:auto;display:flex;gap:6px">
+        <button class="btn" id="btn-export">⬇ Télécharger</button>
+        <button class="btn-g" id="btn-new">Nouveau</button>
+      </div>
+    </div>
+    <div id="tab-content"></div>`;
+  renderTab();
+  document.querySelectorAll(".tab-btn").forEach(b=>b.addEventListener("click",()=>{ST.tab=b.dataset.tab;renderTab();}));
+  document.getElementById("btn-export").addEventListener("click",exportRapport);
+  document.getElementById("btn-new").addEventListener("click",()=>{
+    Object.assign(ST,{step:0,profile:"",spec:"",ents:[{id:"e1",name:"",siren:"",pappers:null}],files:{},parsed:{},activeEnt:0,answers:{retraitDir:"Non",ebitdaN:"Non",porteurType:"Salarié",groupeTVA:"Non",typeHonoraires:"Mixte",exercice:"",schema:"1asso-1sas",nomAsso1:"",nomAsso2:"",nomSas:"",commentaire:""},result:"",error:"",iaHist:[],tab:"rapport"});
+    render();
+  });
+}
+
+function renderTab(){
+  const tc=document.getElementById("tab-content");
+  if(!tc)return;
+  if(ST.tab==="rapport"){
+    // Calcul du zoom pour afficher 1280px dans l'écran
+    const w=Math.min(window.innerWidth-32,860);
+    const zoom=(w/1280).toFixed(3);
+    const scaledH=Math.round(720*zoom+40);
+    tc.innerHTML=`
+      <div class="rapport-zoom">
+        <span>Zoom</span>
+        <button class="btn-g btn-sm" id="zoom-out">−</button>
+        <span id="zoom-val">${Math.round(zoom*100)}%</span>
+        <button class="btn-g btn-sm" id="zoom-in">+</button>
+        <button class="btn-g btn-sm" id="btn-open-new">Ouvrir dans un nouvel onglet ↗</button>
+      </div>
+      <div id="rapport-scroll" style="overflow:auto;max-height:75vh;background:white;border-radius:12px;padding:8px">
+        <div id="rapport-inner" style="width:${Math.round(1280*zoom)}px;height:${scaledH}px;position:relative">
+          <iframe id="rframe" style="width:1280px;height:6000px;border:none;transform-origin:top left;transform:scale(${zoom});position:absolute;top:0;left:0" title="Rapport"></iframe>
+        </div>
+      </div>`;
+    ST.zoom=parseFloat(zoom);
+    setTimeout(()=>{
+      const fr=document.getElementById("rframe");
+      if(fr)fr.srcdoc=ST.result;
+      document.getElementById("zoom-out").addEventListener("click",()=>changeZoom(-0.05));
+      document.getElementById("zoom-in").addEventListener("click",()=>changeZoom(0.05));
+      document.getElementById("btn-open-new").addEventListener("click",openInNewTab);
+    },50);
+  }else{
+    tc.innerHTML=`<div class="card">
+      <div class="card-title" style="margin-bottom:10px">Assistant IA Big 4</div>
+      <div class="chips">${["Points d'alerte ?","Analyse BFR","Recommandations tréso","Red flags","EBITDA normatif ?","Plan d'actions prioritaire"].map(q=>`<button class="btn-g btn-sm ia-quick" data-q="${q}">${q}</button>`).join("")}</div>
+      <div id="ia-history"></div>
+      <div class="ia-input-row">
+        <input class="inp" id="ia-input" placeholder="Votre question…" style="flex:1">
+        <button class="btn" id="ia-send" style="padding:9px 16px">↑</button>
+      </div>
+    </div>`;
+    renderIaHistory();
+    document.getElementById("ia-input").addEventListener("keydown",e=>{if(e.key==="Enter")sendIa(document.getElementById("ia-input").value);});
+    document.getElementById("ia-send").addEventListener("click",()=>sendIa(document.getElementById("ia-input").value));
+    document.querySelectorAll(".ia-quick").forEach(b=>b.addEventListener("click",()=>sendIa(b.dataset.q)));
+  }
+}
+
+function changeZoom(delta){
+  ST.zoom=Math.max(0.2,Math.min(1,ST.zoom+delta));
+  const z=ST.zoom;
+  const fr=document.getElementById("rframe");
+  const inner=document.getElementById("rapport-inner");
+  if(fr){fr.style.transform=`scale(${z})`;}
+  if(inner){inner.style.width=Math.round(1280*z)+"px";}
+  const zv=document.getElementById("zoom-val");
+  if(zv)zv.textContent=Math.round(z*100)+"%";
+}
+
+// ══════════════════════════════════════════
+// EXPORT — FIX : ouvrir dans nouvel onglet
+// (évite le bug de téléchargement sur mobile)
+// ══════════════════════════════════════════
+function openInNewTab(){
+  const w=window.open("","_blank");
+  if(w){w.document.open();w.document.write(ST.result);w.document.close();}
+}
+
+function exportRapport(){
+  if(!ST.result){alert("Aucun rapport à exporter.");return;}
+
+  // Méthode 1 — Blob (Desktop Chrome/Firefox)
+  try{
+    const blob=new Blob([ST.result],{type:"text/html;charset=utf-8"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download="kopilot-rapport.html";
+    a.style.display="none";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},2000);
+    return;
+  }catch(e1){console.warn("Blob failed",e1);}
+
+  // Méthode 2 — Nouvel onglet avec write (Safari iOS/macOS)
+  try{
+    const w=window.open("","_blank");
+    if(w&&!w.closed){
+      w.document.open();
+      w.document.write(ST.result);
+      w.document.close();
+      return;
+    }
+  }catch(e2){console.warn("window.open failed",e2);}
+
+  // Méthode 3 — Afficher un lien data URI à cliquer manuellement
+  showExportModal();
+}
+
+function showExportModal(){
+  // Crée une modale avec un lien à appui long "Enregistrer sous"
+  const overlay=document.createElement("div");
+  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px";
+  const box=document.createElement("div");
+  box.style.cssText="background:#0A1E6E;border-radius:12px;padding:28px;max-width:480px;width:100%;color:white;font-family:'Segoe UI',system-ui,sans-serif";
+  
+  // Encode le HTML en base64 pour éviter la limite de taille URI
+  const b64=btoa(unescape(encodeURIComponent(ST.result)));
+  const dataUri="data:text/html;base64,"+b64;
+  
+  box.innerHTML=`
+    <div style="font-size:18px;font-weight:700;margin-bottom:8px">📥 Téléchargement du rapport</div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:20px">
+      Cliquez sur le bouton ci-dessous. Sur mobile, faites un appui long puis "Télécharger le lien".
+    </div>
+    <a href="${dataUri}" download="kopilot-rapport.html"
+       style="display:block;background:linear-gradient(135deg,#3B82F6,#0A1E6E);color:white;text-align:center;padding:14px;border-radius:8px;font-weight:700;font-size:15px;text-decoration:none;margin-bottom:12px">
+      ⬇ Télécharger kopilot-rapport.html
+    </a>
+    <button onclick="this.closest('div[style*=fixed]').remove()"
+      style="width:100%;background:transparent;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.6);padding:10px;border-radius:8px;cursor:pointer;font-size:13px">
+      Fermer
+    </button>
+  `;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  overlay.addEventListener("click",e=>{if(e.target===overlay)overlay.remove();});
+}
+
+function renderIaHistory(){
+  const h=document.getElementById("ia-history");
+  if(!h)return;
+  if(!ST.iaHist.length){h.innerHTML=`<div class="empty-ia">Posez votre première question…</div>`;return;}
+  h.innerHTML=ST.iaHist.map(m=>`<div class="ia-msg ${m.role}"><div class="ia-bubble">${m.content.replace(/</g,"&lt;")}</div></div>`).join("");
+  h.scrollTop=h.scrollHeight;
+}
+
+function buildIaContext(){
+  const gf=v=>Math.round(v||0).toLocaleString("fr-FR");
+  const pct=(a,b)=>b?((a/b)*100).toFixed(1)+"%":"—";
+  let ctx=`Tu es expert-comptable Big 4, cabinet KOPILOT. Tu as accès à TOUTES les données financières ci-dessous issues du dossier en cours.
+Profil : ${ST.profile||"Générique"} | Exercice : ${ST.answers.exercice||"non précisé"}
+Porteur : ${ST.answers.porteurType} | Retraitement dirigeant : ${ST.answers.retraitDir}
+Réponds de façon précise et chiffrée en t'appuyant sur les données disponibles. Ne dis jamais que tu n'as pas accès aux données — tout est ci-dessous.\n\n`;
+
+  ST.ents.forEach(ent=>{
+    ctx+=`════ ENTITÉ : ${ent.name||"—"}${ent.siren?" (SIREN "+ent.siren+")":""} ════\n`;
+    const p=ST.parsed[ent.id];
+    if(p){
+      ctx+=`── COMPTE DE RÉSULTAT ──\n`;
+      ctx+=`CA: ${gf(p.CA)}€ | Achats: ${gf(p.achats)}€ | Charges ext: ${gf(p.chargesExt)}€\n`;
+      ctx+=`Marge brute: ${gf(p.MB)}€ (${pct(p.MB,p.CA)})\n`;
+      ctx+=`Impôts/taxes: ${gf(p.impots)}€ | Salaires bruts: ${gf(p.salaires)}€ | Charges soc: ${gf(p.chargesSoc)}€ | MS totale: ${gf(p.ms)}€ (${pct(p.ms,p.CA)})\n`;
+      ctx+=`EBE: ${gf(p.EBE)}€ (${pct(p.EBE,p.CA)}) | Amort: ${gf(p.dotAmort)}€ | EBIT: ${gf(p.EBIT)}€\n`;
+      ctx+=`Prod fin: ${gf(p.prodFin)}€ | Chg fin: ${gf(p.chgFin)}€ | REX: ${gf(p.REX)}€\n`;
+      ctx+=`Prod excep: ${gf(p.prodExcep)}€ | Chg excep: ${gf(p.chgExcep)}€ | IS: ${gf(p.IS)}€ | RN: ${gf(p.RN)}€\n`;
+      ctx+=`CAF: ${gf(p.CAF)}€\n\n`;
+      ctx+=`── BILAN ACTIF (total: ${gf(p.actifTotal)}€) ──\n`;
+      ctx+=`Immo incorp nettes: ${gf(p.imoIncorpB)}€ | Immo corp nettes: ${gf(p.imoCorpB)}€ | Immo fin: ${gf(p.imoFinB)}€ | Amort cumulés: ${gf(p.imoAmortB)}€\n`;
+      ctx+=`→ Actif immobilisé net: ${gf(p.actiImmoNet)}€\n`;
+      ctx+=`Stocks: ${gf(p.stocksB)}€ | Créances clients: ${gf(p.creancesCliB)}€ | Autres créances: ${gf(p.autresCreancesB)}€ | Tréso: ${gf(p.dispoB)}€\n\n`;
+      ctx+=`── BILAN PASSIF (total: ${gf(p.passifTotal)}€) ──\n`;
+      ctx+=`Capital: ${gf(p.capitalB)}€ | Réserves: ${gf(p.reservesB)}€ | RAN: ${gf(p.rAnB)}€ | Résultat: ${gf(p.rnB)}€ | Subv: ${gf(p.subvB)}€\n`;
+      ctx+=`→ Capitaux propres: ${gf(p.cpTot)}€\n`;
+      ctx+=`Provisions: ${gf(p.provB)}€ | Dettes fin (empr+découv): ${gf(p.dettesFinB)}€\n`;
+      ctx+=`Fournisseurs: ${gf(p.fournissB)}€ | Dettes sociales: ${gf(p.dettesSocB)}€ | Dettes fiscales: ${gf(p.dettesFixB)}€ | Autres dettes (CC associés etc): ${gf(p.autresDettesB)}€\n`;
+      if(p.bilanEcart!==0)ctx+=`⚠ Écart de bilan: ${gf(p.bilanEcart)}€ (FEC potentiellement incomplet)\n`;
+      ctx+=`\n── ÉQUILIBRE FINANCIER ──\n`;
+      ctx+=`FRNG: ${gf(p.FRNG)}€ | BFR: ${gf(p.BFR)}€ | TN: ${gf(p.TN)}€\n`;
+      ctx+=`DSO: ${p.DSO}j | DPO: ${p.DPO}j\n\n`;
+      ctx+=`── ACTIVITÉ MENSUELLE ──\n`;
+      if(p.hasCa&&p.caArr.length)ctx+=`CA mensuel: ${p.caArr.map(m=>m.mo+":"+gf(m.v)+"€").join(" | ")}\n`;
+      else if(p.chgArr.length)ctx+=`Charges mensuelles (proxy d'activité): ${p.chgArr.map(m=>m.mo+":"+gf(m.v)+"€").join(" | ")}\n`;
+      ctx+=`\n── TOP FOURNISSEURS ──\n`;
+      p.top15.forEach((f,i)=>ctx+=`${i+1}. ${f.name} — Achats: ${gf(f.debit)}€ | Solde dû: ${gf(f.solde)}€\n`);
+      ctx+=`\n── BALANCE ÂGÉE FOURNISSEURS (total: ${gf(p.totAP)}€) ──\n`;
+      ctx+=`0-30j: ${gf(p.agedP["0-30"])}€ | 30-60j: ${gf(p.agedP["30-60"])}€ | 60-90j: ${gf(p.agedP["60-90"])}€ | >90j: ${gf(p.agedP[">90"])}€\n`;
+      ctx+=`── BALANCE ÂGÉE CLIENTS (total: ${gf(p.totAR)}€) ──\n`;
+      ctx+=`0-30j: ${gf(p.agedR["0-30"])}€ | 30-60j: ${gf(p.agedR["30-60"])}€ | 60-90j: ${gf(p.agedR["60-90"])}€ | >90j: ${gf(p.agedR[">90"])}€\n\n`;
+      ctx+=`── ALERTES ──\n${p.alerts.length?p.alerts.join("\n"):"Aucune alerte majeure"}\n`;
+    }else{
+      ctx+=`[Pas de FEC parsé pour cette entité]\n`;
+    }
+    // Fichiers texte uploadés
+    ["silae","balance","gl"].forEach(sid=>{
+      const f=ST.files[ent.id+"__"+sid];
+      if(f&&f.data&&f.type==="text"){
+        ctx+=`\n── FICHIER ${sid.toUpperCase()} (${f.name}) ──\n`;
+        ctx+=f.data.slice(0,6000)+(f.data.length>6000?"\n[...tronqué]":"")+"\n";
+      }
+    });
+    ["bilan","emprunts"].forEach(sid=>{
+      const keys=Object.keys(ST.files).filter(k=>k.startsWith(ent.id+"__"+sid+"__")||k===ent.id+"__"+sid);
+      keys.forEach((k,idx)=>{
+        const f=ST.files[k];
+        if(f&&f.data&&f.type==="text"){
+          ctx+=`\n── FICHIER ${sid.toUpperCase()}${keys.length>1?" #"+(idx+1):""} (${f.name}) ──\n`;
+          ctx+=f.data.slice(0,6000)+(f.data.length>6000?"\n[...tronqué]":"")+"\n";
+        }
+      });
+    });
+    ctx+="\n";
+  });
+  if(ST.answers.commentaire)ctx+=`Commentaire cabinet : ${ST.answers.commentaire}\n`;
+  return ctx;
+}
+
+async function sendIa(q){
+  if(!q||!q.trim())return;
+  ST.iaHist.push({role:"user",content:q});
+  const inp=document.getElementById("ia-input");
+  if(inp)inp.value="";
+  renderIaHistory();
+  // Rebuild context à chaque appel (données toujours fraîches)
+  const sys=buildIaContext();
+  try{
+    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1200,system:sys,messages:ST.iaHist})});
+    const d=await r.json();
+    ST.iaHist.push({role:"assistant",content:d.content?.find(b=>b.type==="text")?.text||"Erreur"});
+  }catch(e){ST.iaHist.push({role:"assistant",content:"Erreur : "+e.message});}
+  renderIaHistory();
+}
+
+// ══════════════════════════════════════════
+// GENERATE
+// ══════════════════════════════════════════
+async function generate(){
+  ST.step=4;ST.error="";ST.result="";
+  render();
+  const msgs=[
+    [8,"Préparation des données…"],
+    [25,"Envoi à Claude Sonnet…"],
+    [45,"Génération des slides…"],
+    [65,"Construction du rapport…"],
+  ];
+  let mi=0;
+  const iv=setInterval(()=>{
+    if(mi<msgs.length){
+      const [pct,msg]=msgs[mi++];
+      const prog=document.getElementById("prog");
+      const pmsg=document.getElementById("prog-msg");
+      if(prog)prog.style.width=pct+"%";
+      if(pmsg)pmsg.textContent=msg;
+    }
+  },4000);
+  try{
+    const r=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514",
+        max_tokens:64000,
+        system:getSystemPrompt(),
+        messages:[{role:"user",content:buildUserPrompt()}]
+      })
+    });
+    clearInterval(iv);
+    const prog=document.getElementById("prog");
+    const pmsg=document.getElementById("prog-msg");
+    if(prog)prog.style.width="90%";
+    if(pmsg)pmsg.textContent="Finalisation…";
+    const d=await r.json();
+    if(d.error)throw new Error(d.error.message);
+    const html=d.content?.find(b=>b.type==="text")?.text||"";
+    if(!html)throw new Error("Réponse vide de l'API");
+    // Nettoyer les éventuels backticks markdown
+    ST.result=html.replace(/^```html\n?/,"").replace(/\n?```$/,"").trim();
+    if(!ST.result.startsWith("<!"))throw new Error("Format de réponse inattendu");
+    ST.step=5;ST.tab="rapport";
+    render();
+  }catch(e){
+    clearInterval(iv);
+    ST.error=e.message;
+    ST.step=3;
+    render();
+  }
+}
+
+// ══════════════════════════════════════════
+// BIND EVENTS
+// ══════════════════════════════════════════
+function bindEvents(){
+  // Step 0
+  document.querySelectorAll(".prof-card").forEach(el=>el.addEventListener("click",()=>{ST.profile=el.dataset.profile;render();}));
+  // Schéma Centre de Santé
+  document.querySelectorAll(".schema-card").forEach(el=>el.addEventListener("click",()=>{ST.answers.schema=el.dataset.schema;render();}));
+  document.querySelectorAll(".schema-name").forEach(inp=>inp.addEventListener("input",e=>{ST.answers[e.target.dataset.field]=e.target.value;}));
+  const n0=document.getElementById("btn-next-0");
+  if(n0)n0.addEventListener("click",()=>{ST.step=1;render();});
+
+  // Step 1
+  document.querySelectorAll("input[data-ent]").forEach(inp=>{
+    inp.addEventListener("input",e=>{
+      const i=+e.target.dataset.ent;
+      ST.ents[i].name=e.target.value;
+      const nb=document.getElementById("btn-next-1");
+      if(nb)nb.disabled=!ST.ents.some(e=>e.name);
+    });
+  });
+  document.querySelectorAll(".siren-inp").forEach(inp=>{
+    inp.addEventListener("input",e=>{const i=+e.target.dataset.ent;ST.ents[i].siren=e.target.value;});
+    inp.addEventListener("blur",e=>{
+      const siren=e.target.value.replace(/\s/g,""),i=+e.target.dataset.ent;
+      fetchPappers(i,siren); // utilise la fonction globale
+    });
+  });
+  document.querySelectorAll(".del-ent").forEach(b=>b.addEventListener("click",()=>{ST.ents.splice(+b.dataset.del,1);render();}));
+  const addE=document.getElementById("add-ent");
+  if(addE)addE.addEventListener("click",()=>{ST.ents.push({id:"e"+Date.now(),name:"",siren:"",pappers:null});render();});
+  const b1=document.getElementById("btn-back-1");if(b1)b1.addEventListener("click",()=>{ST.step=0;render();});
+  const n1=document.getElementById("btn-next-1");if(n1)n1.addEventListener("click",()=>{ST.step=2;render();});
+
+  // Step 2
+  document.querySelectorAll(".ent-tab").forEach(b=>b.addEventListener("click",()=>{ST.activeEnt=+b.dataset.entTab;render();}));
+
+  // Slots mono-fichier : clic sur la zone
+  document.querySelectorAll(".file-slot-click").forEach(slot=>{
+    slot.addEventListener("click",()=>{
+      const inp=document.getElementById("fi-"+slot.dataset.slot);
+      if(inp)inp.click();
+    });
+  });
+
+  // Slots mono-fichier : chargement
+  document.querySelectorAll(".file-inp").forEach(inp=>{
+    inp.addEventListener("change",e=>{
+      const file=e.target.files[0];if(!file)return;
+      const slotId=e.target.dataset.slot;
+      const entIdx=ST.activeEnt;
+      const key=ST.ents[entIdx].id+"__"+slotId;
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        const data=ev.target.result;
+        ST.files[key]={name:file.name,data,type:"text"};
+        if(slotId==="fec"){
+          try{
+            ST.parsed[ST.ents[entIdx].id]=parseFEC(data);
+          }catch(err){console.warn("FEC parse error",err);}
+
+          // ── Auto-extraction SIREN + appel Pappers ──────────────
+          const sirenTrouve=extractSirenFromFEC(data, file.name);
+          if(sirenTrouve&&!ST.ents[entIdx].siren){
+            console.log("SIREN extrait du FEC :",sirenTrouve);
+            ST.ents[entIdx].siren=sirenTrouve;
+            fetchPappers(entIdx,sirenTrouve);
+          } else if(ST.ents[entIdx].siren&&!ST.ents[entIdx].pappers){
+            fetchPappers(entIdx,ST.ents[entIdx].siren);
+          }
+          // ────────────────────────────────────────────────────────
+        }
+        render();
+      };
+      reader.onerror=()=>console.warn("File read error");
+      reader.readAsText(file,"UTF-8");
+    });
+  });
+
+  // Slots multi-fichiers (emprunts, bilan) : ajout d'un fichier
+  document.querySelectorAll(".file-inp-multi").forEach(inp=>{
+    inp.addEventListener("change",e=>{
+      const file=e.target.files[0];if(!file)return;
+      const slotId=e.target.dataset.slot;
+      const entId=e.target.dataset.entid;
+      // Clé unique : entId__slotId__timestamp
+      const key=entId+"__"+slotId+"__"+Date.now();
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        ST.files[key]={name:file.name,data:ev.target.result,type:"text"};
+        render();
+      };
+      reader.onerror=()=>console.warn("File read error");
+      reader.readAsText(file,"UTF-8");
+      e.target.value=""; // reset input pour pouvoir recharger le même fichier
+    });
+  });
+
+  // Suppression fichier (mono et multi)
+  document.querySelectorAll(".del-file").forEach(btn=>{
+    btn.addEventListener("click",e=>{
+      e.stopPropagation();
+      const key=btn.dataset.key;
+      delete ST.files[key];
+      // Si c'était un FEC, supprimer aussi le parsed
+      if(key.includes("__fec")){
+        const entId=key.split("__")[0];
+        delete ST.parsed[entId];
+      }
+      render();
+    });
+  });
+  const b2=document.getElementById("btn-back-2");if(b2)b2.addEventListener("click",()=>{ST.step=1;render();});
+  const n2=document.getElementById("btn-next-2");if(n2)n2.addEventListener("click",()=>{ST.step=3;render();});
+
+  // Step 3
+  document.querySelectorAll(".q-opt").forEach(opt=>{
+    opt.addEventListener("click",()=>{ST.answers[opt.dataset.field]=opt.dataset.val;render();});
+  });
+  // Selects
+  document.querySelectorAll(".q-select").forEach(sel=>{
+    sel.addEventListener("change",e=>{ST.answers[e.target.dataset.field]=e.target.value;});
+  });
+  // Champs texte libres (finess, montants...)
+  document.querySelectorAll(".q-text").forEach(inp=>{
+    inp.addEventListener("input",e=>{ST.answers[e.target.dataset.field]=e.target.value;});
+  });
+  // Champs noms entités schéma CDS
+  document.querySelectorAll(".schema-name").forEach(inp=>{
+    inp.addEventListener("input",e=>{ST.answers[e.target.dataset.field]=e.target.value;});
+  });
+  const exInp=document.getElementById("exercice-inp");
+  if(exInp)exInp.addEventListener("input",e=>ST.answers.exercice=e.target.value);
+  const comInp=document.getElementById("comment-inp");
+  if(comInp)comInp.addEventListener("input",e=>ST.answers.commentaire=e.target.value);
+  const b3=document.getElementById("btn-back-3");if(b3)b3.addEventListener("click",()=>{ST.step=2;render();});
+  const gen=document.getElementById("btn-generate");if(gen)gen.addEventListener("click",generate);
+}
+
+render();
+</script>
+</body>
+</html>
