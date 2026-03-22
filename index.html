@@ -2996,10 +2996,6 @@ function buildUserPrompt(){
       });
       lines.push("");
       lines.push("=== KPIs PRÉ-CALCULÉS — UTILISER EXACTEMENT, NE PAS RECALCULER ===");
-      if(typeof totalPraticiensBrut!=="undefined"&&totalPraticiensBrut>0&&typeof cCA!=="undefined"&&cCA>0){
-        const ratPrat=((totalPraticiensBrut/cCA)*100).toFixed(1);
-        lines.push("KPI PRATICIENS/CA = "+ratPrat+"% - sal.brut "+gf(totalPraticiensBrut)+"E / CA "+gf(cCA)+"E");
-      }
       lines.push("FRNG = "+gf(p.FRNG)+"E | BFR = "+gf(p.BFR)+"E | TN = "+gf(p.TN)+"E");
       lines.push("DSO = "+p.DSO+"j — formule : "+gf(p.creancesCliNettes)+"€ nettes / ("+gf(p.CA)+"€/365) — NE PAS RECALCULER");
       lines.push("DPO = "+p.DPO+"j | CAF = "+gf(p.CAF)+"€ (RN "+gf(p.RN)+"€ + DAP "+gf(p.dotAmort)+"€) — NE PAS RECALCULER");
@@ -3217,7 +3213,7 @@ function buildUserPrompt(){
   // Ratio praticiens/CA ? global + nominatif si saisi
   lines.push("");
   lines.push("=== RATIO PRATICIENS/CA — DONNÉES POUR SLIDE 12 ===");
-  let totalPraticiensBrut=0;
+  var totalPraticiensBrut=0;
   const praticienDetails=[];
   ST.ents.forEach(ent=>{
     const silae=ST.parsedSILAE&&ST.parsedSILAE[ent.id];
@@ -3233,6 +3229,8 @@ function buildUserPrompt(){
   });
   if(totalPraticiensBrut>0&&cCA>0){
     lines.push("  Ratio GLOBAL praticiens : sal.brut="+gf(totalPraticiensBrut)+"€ / CA="+gf(cCA)+"€ = "+((totalPraticiensBrut/cCA)*100).toFixed(1)+"% — formule : sal.brut praticiens SILAE / CA consolidé Asso");
+    const ratPrat=((totalPraticiensBrut/cCA)*100).toFixed(1);
+    lines.push("KPI PRATICIENS/CA = "+ratPrat+"% - AFFICHER CE CHIFFRE EN S3 KPI (sal.brut "+gf(totalPraticiensBrut)+"E / CA "+gf(cCA)+"E)");
   }
   if(praticienDetails.length>0){
     const avecCA=praticienDetails.filter(p=>p.ca>0);
