@@ -115,7 +115,7 @@ const ST = {
   step:0, profile:"", spec:"",
   ents:[{id:"e1",name:"",siren:"",pappers:null}],
   files:{}, parsed:{}, parsedSILAE:{}, activeEnt:0,
-  apiKey:"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",
+  apiKey:"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",
   answers:{
     retraitDir:"Non", ebitdaN:"Non", porteurType:"Salarié",
     groupeTVA:"Non", typeHonoraires:"Mixte", exercice:"",
@@ -140,7 +140,7 @@ const ST = {
     objectifCession:"Non", objectifLevee:"Non",
     commentaire:""
   },
-  result:"", error:"", iaHist:[], tab:"rapport", zoom:0.6
+  result:"", error:"", iaHist:[], _generatePasse:1, tab:"rapport", zoom:0.6
 };
 
 const PROFILES=[
@@ -155,9 +155,8 @@ const FSLOTS=[
   {id:"silae",   icon:"👥",label:"SILAE"},
   {id:"balance", icon:"⚖️",label:"Balance"},
   {id:"gl",      icon:"📖",label:"Grand Livre"},
-  {id:"bilan",   icon:"📄",label:"Bilan N-1"},
-  {id:"emprunts",icon:"💰",label:"Emprunts/Leasing (optionnel)"},
-  {id:"plaquette",icon:"📋",label:"Plaquette Bilan/CR"},
+  {id:"bilan",   icon:"📄",label:"Plaquette N/N-1"},
+  {id:"plaquette",icon:"📋",label:"Liasse fiscale"},
 ];
 const STEPS=["Profil","Entités","Fichiers","Analyse","CA Praticiens","Génération"];
 
@@ -462,6 +461,8 @@ function parseFEC(text){
   const iPd=gi(["piecedate","datepiece"]);
   const iAxN=gi(["compauxnum","auxiliairenum","auxnum","tiers"]);
   const iAxL=gi(["compauxlib","auxiliairelib","auxlib","libelletiers"]);
+  const iCL =gi(["comptelib","libellecompte","libelledu","libelle","accountlabel","nomcompte"]); // libellé du compte
+  const iEL =gi(["ecriturelib","libelleecriture","libecr","intitule","label"]); // libellé de l'écriture
   const iJ  =gi(["journalcode","journal","codejnl","codejournal"]);
 
   // Vérification colonnes critiques
@@ -478,6 +479,8 @@ function parseFEC(text){
   let CA=0,achats=0,chargesExt=0,impots=0,salaires=0,chargesSoc=0,dotAmort=0;
   let autresProd=0,autresChg=0,prodFin=0,chgFin=0,prodExcep=0,chgExcep=0,IS=0;
   let achatsMds=0; // 607x (marchandises pures) + 603x (variation stocks) — pour marge brute commerciale
+  let achats602=0, achatsVariStock=0, achatsInterco604=0; // détail comptes achats
+  const cptLibs={}; // { cpt: lib } libellés de comptes pour classification
   const caMonth={},chgMonth={},fourn={};
   const agedP={"0-30":0,"30-60":0,"60-90":0,">90":0};
   const agedR={"0-30":0,"30-60":0,"60-90":0,">90":0};
@@ -545,9 +548,14 @@ function parseFEC(text){
       else if(cpt.startsWith("60")){
         achats+=d-c; // 609x créditeur → d-c négatif → réduit achats correctement
         if(mo)chgMonth[mo]=(chgMonth[mo]||0)+(d-c);
-        // 607x = marchandises (appareils, accessoires, piles) | 603x = variation stocks marchandises
+        // 602x = matières consommables (vrais consommables dentaires)
+        if(cpt.startsWith("602"))achats602+=d-c;
+        // 603x = variation de stocks (≠ achat — peut être négatif)
+        if(cpt.startsWith("603")){achatsVariStock+=d-c; achatsMds+=d-c;}
+        // 604x = prestations de services (souvent refacturations interco SAS→Asso)
+        if(cpt.startsWith("604"))achatsInterco604+=d-c;
+        // 607x = marchandises | 609x = RRR
         if(cpt.startsWith("607")||cpt.startsWith("609"))achatsMds+=d-c;
-        if(cpt.startsWith("603"))achatsMds+=d-c; // variation stocks réduit si créditeur
       }
       // ── Classe 61-62 : Charges externes ──
       else if(cpt.match(/^6[12]/)){
@@ -563,7 +571,7 @@ function parseFEC(text){
       // ── Classe 63 : Impôts et taxes ──
       else if(cpt.startsWith("63")){impots+=d-c; if(mo)chgMonth[mo]=(chgMonth[mo]||0)+(d-c);}
       // ── Classe 641-644 : Salaires et appointements ──
-      else if(cpt.match(/^64[1234]/)){salaires+=d-c; if(mo)chgMonth[mo]=(chgMonth[mo]||0)+(d-c);}
+      else if(cpt.match(/^64[0-4]/)){salaires+=d-c; if(mo)chgMonth[mo]=(chgMonth[mo]||0)+(d-c);} // 640 inclus
       // ── Classe 645-648 : Charges sociales patronales ──
       else if(cpt.match(/^64[5-9]/)){chargesSoc+=d-c; if(mo)chgMonth[mo]=(chgMonth[mo]||0)+(d-c);}
       // ── Classe 65 : Autres charges de gestion courante ──
@@ -576,7 +584,7 @@ function parseFEC(text){
       // ── Classe 68 : Dotations aux amortissements et provisions ──
       else if(cpt.startsWith("68")){dotAmort+=d-c; if(mo)chgMonth[mo]=(chgMonth[mo]||0)+(d-c);}
       // ── Classe 69 : IS et participation ──
-      else if(cpt.match(/^69[5-9]/))IS+=d-c;
+      else if(cpt.startsWith("69"))IS+=d-c; // 690-699 : IS, participation, dotations liées
       // ── Classe 8 : Comptes spéciaux (engagements hors bilan) — ignorer ──
     }
 
@@ -708,6 +716,40 @@ function parseFEC(text){
   // ── Totaux bilan provisoires (utilisés pour calcul rnB_final ci-dessous) ──
   const actiImmoNet=imoIncorpB+imoCorpB+imoFinB-imoAmortB;
 
+  // ── Reclassification 60x par libellé ─────────────────────────────
+  // Mots-clés = vrais consommables dentaires
+  const CONSO_KW=["dentaire","materiau","consomm","fournitur","implant","prothese",
+    "produit","steril","hygien","gant","masque","seringue","aiguill","ciment","resine",
+    "amalgame","endod","pansem","alginat","platre","anesthes","gaze","coton","bande","fil"];
+  // Mots-clés = prestations de service / interco
+  const INTERCO_KW=["prestation","honoraire","refacturat","location","loyer",
+    "management","service","gest","administrat","redevance","mise a disposition"];
+  
+  let achats602_lib=0, achatsInterco604_lib=0;
+  const libCount = Object.keys(cptLibs).filter(k=>k.startsWith("60")).length;
+  
+  if(libCount >= 2){ // libellés disponibles → reclassifier
+    Object.entries(accts).forEach(([cpt,acc])=>{
+      if(!cpt.startsWith("60")||cpt.startsWith("609"))return;
+      const mt=acc.d-acc.c; if(mt<=0)return;
+      const lib=(cptLibs[cpt]||"").toLowerCase();
+      const isConso=CONSO_KW.some(k=>lib.includes(k));
+      const isInterco=INTERCO_KW.some(k=>lib.includes(k));
+      if(cpt.startsWith("602")||cpt.startsWith("603")){
+        achats602_lib+=mt;
+      } else if(cpt.startsWith("604")){
+        if(isConso&&!isInterco) achats602_lib+=mt;
+        else achatsInterco604_lib+=mt;
+      } else if(!cpt.startsWith("607")&&!cpt.startsWith("609")){
+        if(isConso) achats602_lib+=mt;
+        else if(isInterco) achatsInterco604_lib+=mt;
+        else achats602_lib+=mt; // par défaut = consommable si ni l'un ni l'autre
+      }
+    });
+    if(achats602_lib>0) achats602=achats602_lib;
+    if(achatsInterco604_lib>0) achatsInterco604=achatsInterco604_lib;
+  }
+
   // ── CR Totaux ──────────────────────────────────────────────────
   // Définition EBITDA standard (bottom-up) :
   // EBITDA = RN + IS + Résultat financier net + DAP + Résultat exceptionnel net
@@ -774,7 +816,7 @@ function parseFEC(text){
 
   // Ratios
   // DSO = NET 41x (débiteurs - créditeurs) / (CA / 365)
-  const DSO=CA>0?Math.round(creancesCliNettes/(CA/365)):0;
+  const DSO=CA>0?Math.round(cli411Net/(CA/365)):0; // DSO = (411 debiteurs - 411 crediteurs) / (CA/365)
   // DPO = Dettes fournisseurs 40x / (Achats / 365)
   const DPO=achats>0?Math.round(fournissB/(achats/365)):0;
 
@@ -803,7 +845,7 @@ function parseFEC(text){
 
   return{
     // CR
-    CA,achats,achatsMds,chargesExt,impots,salaires,chargesSoc,
+    CA,achats,achatsMds,achats602,achatsVariStock,achatsInterco604,chargesExt,impots,salaires,chargesSoc,
     ms,msAvecTaxes,dotAmort,
     autresProd,autresChg,prodFin,chgFin,prodExcep,chgExcep,IS,
     MB,EBE,EBITDA,EBIT,REX,RN:RN_exact,CAF,
@@ -1113,6 +1155,7 @@ SVG fermé avec </svg>.
 
 SLIDE 5 — P&L ${asso1} :
 Header : "P&L ${asso1}" + sous-titre "${asso1} — Association loi 1901" en #00C2CB 13px.
+⚠️ COMPTES 60x OBLIGATOIRE : dans le P&L, NE JAMAIS afficher une seule ligne "Achats/Conso (60x)" groupée. Afficher séparément : (1) "Consommables (602x)" = vrais consommables, ratio benchmark 10-18% | (2) "Prestations SAS (604x)" si présent = interco, ligne distincte | (3) autres achats si significatifs. Le ratio consommables/CA = 602x/CA UNIQUEMENT.
 ⚠️ TABLEAU COMPACT OBLIGATOIRE — la slide fait 720px max, le tableau doit tout tenir :
 - CSS td : padding:5px 10px; font-size:11px (PAS 12px ou 13px — trop grand)
 - CSS thead th : padding:6px 10px; font-size:11px
@@ -1129,7 +1172,8 @@ Idem P&L. TITRER CLAIREMENT que c'est la SAS.
 
 SLIDE 7 — CONSOLIDATION GROUPE :
 Tableau ${is2asso?4:3} colonnes : ${asso1}${is2asso?" | "+asso2:""} | ${sas} | Consolidé.
-Lignes : CA | Produits totaux | Charges totales | EBITDA | EBITDA% | RN | Tréso | MS/CA | DSO | DSO.
+Lignes : CA | EBITDA | EBITDA% | RN | Trésorerie | MS/CA.
+⚠️ Ne PAS afficher de DSO consolidé — le DSO n'a pas de sens en consolidé (entités de nature différente). Afficher DSO par entité uniquement dans les slides dédiées.
 Utiliser valeurs pré-calculées transmises.
 
 SLIDE 8 — WATERFALL CR CONSOLIDÉ :
@@ -1138,7 +1182,7 @@ Légende : rect vert=total/EBITDA | rect rouge=charge | rect vert foncé=résult
 Valeur K€ + %CA sur chaque barre. Commentaire analytique 3 bullets sous le graphique.
 
 SLIDE 9 — STRUCTURE DES CHARGES :
-CHARGES_SLIDE_START${buildChargesSlide(ST.ents,ST.parsed,ST.answers)}CHARGES_SLIDE_END
+<!-- CHARGES_SLIDE -->
 
 SLIDE 10 — EBITDA & NORMALISATION :
 Cascade : EBITDA réel pré-calculé → retraitements${a.ebitdaN==="Oui"?" (montants fournis)":"(aucun sauf leasing)"} → EBITDA normatif → + Loyers leasing 612x SAS → EBITDAR.
@@ -1146,6 +1190,7 @@ Colonnes : Poste | Montant€ | %CA | Source. Utiliser UNIQUEMENT les valeurs tr
 
 SLIDE 11 — RATIOS VS BENCHMARKS :
 SVG barres horizontales viewBox="0 0 1100 420". 6 indicateurs : MS/CA (58-64%) | Consommables/CA (10-18%) | EBITDA% | Praticiens/CA (28-32%) | DSO (<15j) | DN/EBITDA (<3×).
+⚠️ Consommables/CA = 602x+603x / CA 70x (hors subventions 74x) — PAS le total 60x, PAS CA+subventions.
 Barre navy = valeur réelle, zone verte = benchmark. Valeur 14px bold navy. ✓/⚠ par indicateur.
 
 SLIDE 12 — CONSOMMABLES & CHARGES EXTERNES :
@@ -1202,8 +1247,6 @@ Définitions simples accessibles à un non-professionnel.
 SLIDE 25 — CONCLUSION STRATÉGIQUE :
 Fond #00146E. 3 colonnes : 💪 Points forts | ⚠️ Points vigilance | 🎯 Recommandations CT/MT/LT.
 Texte blanc, structuré, concis.
-
-SLIDE 25b — GLOSSAIRE : Tableau 2 colonnes (Terme | Définition simple). FRNG | BFR | TN | CAF | DSO | DPO | EBITDA | IS | DAP | MS/CA | Interco | DN | CC51.
 
 SLIDE 26 — DISCLAIMER :
 Fond blanc. Logo centré. Texte légal confidentiel.
@@ -1966,109 +2009,78 @@ function buildBilanSlide(ent, p){
 function buildChargesSlide(ents, parsedMap, answers){
   const gf = v => Math.round(v||0).toLocaleString("fr-FR");
   const pct = (a,b) => b>0 ? (a/b*100).toFixed(1)+"%" : "N/D";
-  const N="#0A1E6E", C="#00C2CB";
+  const N="#0A1E6E", C="#00C2CB", BG="#F0F2F8", ALT="#EEF1FA";
+  const co = calcConso(ents, parsedMap, answers);
+  const total = co.entsCount;
 
-  // Camembert SVG — calcul des arcs
-  function makePie(slices, cx, cy, r){
-    let total = slices.reduce((s,x)=>s+x.v,0);
-    if(total<=0) return '<text x="'+cx+'" y="'+cy+'" text-anchor="middle" font-size="12" fill="#6B7280">Données insuffisantes</text>';
-    let angle = -Math.PI/2; // démarrer en haut
-    let paths = '';
-    slices.forEach(s=>{
-      if(s.v<=0) return;
-      const sweep = (s.v/total)*2*Math.PI;
-      const x1 = cx + r*Math.cos(angle);
-      const y1 = cy + r*Math.sin(angle);
-      const x2 = cx + r*Math.cos(angle+sweep);
-      const y2 = cy + r*Math.sin(angle+sweep);
-      const lg = sweep > Math.PI ? 1 : 0;
-      paths += '<path d="M'+cx+','+cy+' L'+x1.toFixed(1)+','+y1.toFixed(1)+
-        ' A'+r+','+r+' 0 '+lg+',1 '+x2.toFixed(1)+','+y2.toFixed(1)+' Z" fill="'+s.color+'"/>';
-      angle += sweep;
-    });
-    return paths;
-  }
+  // Générer un tableau par entité
+  function makeTable(ent, p){
+    if(!p) return "";
+    const ca = p.CA||1;
+    // Vrais consommables = 602x + 603x uniquement (exclure 604x interco)
+    const conso602 = (p.achats602||0) + (p.achatsVariStock||0);
+    const interco604 = p.achatsInterco604||0;
+    // Si pas de détail 602 disponible, fallback sur p.achats total
+    const consoAffiche = conso602 > 0 ? conso602 : (p.achats||0);
+    
+    const rows = [
+      ...(conso602>0 ? [["Consommables 602x (matières)", conso602]] : [["Consommables (60x)", p.achats||0]]),
+      ...(interco604>0 ? [["Prestations SAS 604x (interco)", interco604]] : []),
+      ["Charges externes (61-62x)", p.chargesExt||0],
+      ["Masse salariale (63-64x)", p.msAvecTaxes||0],
+      ["Dotations amort. (68x)", p.dotAmort||0],
+      ["Autres charges (65-67x)", (p.autresChg||0)+(p.chgExcep||0)],
+    ].filter(([,v])=>v>0);
 
-  // Légende SVG
-  function makeLegend(slices, total, x, yStart, ca){
-    return slices.filter(s=>s.v>0).map((s,i)=>{
-      const y = yStart + i*26;
-      const p = ca>0 ? (s.v/ca*100).toFixed(1) : "—";
-      return '<rect x="'+x+'" y="'+y+'" width="11" height="11" fill="'+s.color+'" rx="2"/>'+
-        '<text x="'+(x+15)+'" y="'+(y+9)+'" font-size="10" fill="#2C3566">'+s.label+' '+Math.round(s.v/1000)+'k€ ('+p+'%)</text>';
-    }).join('');
-  }
+    const totalChg = rows.reduce((s,[,v])=>s+v,0);
+    const rowsHtml = rows.map(([label,val],i)=>`
+      <tr style="background:${i%2===0?ALT:"#fff"}">
+        <td style="padding:8px 12px;font-size:12px;color:#333">${label}</td>
+        <td style="padding:8px 12px;text-align:right;font-size:12px;font-weight:600;color:${N}">${gf(val)}€</td>
+        <td style="padding:8px 12px;text-align:right;font-size:12px;color:#666">${pct(val,ca)}</td>
+      </tr>`).join("");
 
-  const logoSrc = typeof KOPILOT_LOGO_B64!=="undefined" ? KOPILOT_LOGO_B64 : "";
-  const logoImg = '<img id="klogo" alt="KPLT" style="height:32px;width:auto" src="'+logoSrc+'">';
-  const exercice = answers.exercice||"N";
-
-  // Construire les sections par entité
-  const sections = ents.map((ent,ei)=>{
-    const p = parsedMap[ent.id];
-    if(!p) return '<div style="flex:1;padding:0 12px"><p style="color:#6B7280;font-size:11px">Données non disponibles</p></div>';
-
-    const ca = p.CA||0;
-    const slices = [
-      {label:"Masse salariale 64x", v:p.msAvecTaxes||0, color:"#0A1E6E"},
-      {label:"Consommables 602x",   v:p.achats||0,       color:"#00C2CB"},
-      {label:"Loyers 613x",         v:p.loyers613||0,    color:"#3B82F6"},
-      {label:"Charges ext 61-62x",  v:(p.autresExt61||0)+(p.honoraires622||0)+(p.logiciels616||0)+(p.leasing612||0), color:"#8B5CF6"},
-      {label:"Taxes 63x",           v:p.impots||0,       color:"#F59E0B"},
-      {label:"DAP 68x",             v:p.dotAmort||0,     color:"#6B7280"},
-    ].filter(s=>s.v>0);
-
-    const total = slices.reduce((s,x)=>s+x.v,0);
-    const svgW = 420, svgH = 280, cx=130, cy=140, r=110;
-    const pieArcs = makePie(slices, cx, cy, r);
-    const legend = makeLegend(slices, total, 260, 20, ca);
-
-    // Tableau détail
-    const details = [
-      {poste:"Loyers locaux",       cpt:"613x", v:p.loyers613||0},
-      {poste:"Leasing matériel",    cpt:"612x", v:p.leasing612||0},
-      {poste:"Logiciels & licences",cpt:"616x", v:p.logiciels616||0},
-      {poste:"Honoraires ext",      cpt:"622x", v:p.honoraires622||0},
-      {poste:"Autres ext 61-62x",   cpt:"61-62x",v:p.autresExt61||0},
-    ].filter(d=>d.v>0);
-
-    const tableRows = details.map((d,i)=>`
-      <tr style="background:${i%2===0?"white":"#EEF1FA"}">
-        <td style="padding:5px 10px;font-size:10px;color:#2C3566">${d.poste}</td>
-        <td style="padding:5px 10px;font-size:10px;color:#6B7BA4">${d.cpt}</td>
-        <td style="padding:5px 10px;font-size:10px;text-align:right;font-weight:600">${gf(Math.round(d.v))}€</td>
-        <td style="padding:5px 10px;font-size:10px;text-align:right;color:#6B7BA4">${pct(d.v,ca)}</td>
-      </tr>`).join('');
-
-    const colW = ents.length===1 ? "100%" : ents.length===2 ? "48%" : "31%";
-
-    return `<div style="width:${colW};flex-shrink:0">
-      <div style="font-size:12px;font-weight:700;color:#0A1E6E;border-bottom:2px solid #00C2CB;padding-bottom:4px;margin-bottom:10px">── ${ent.name||"Entité "+(ei+1)} ──</div>
-      <svg viewBox="0 0 ${svgW} ${svgH}" style="width:100%;height:auto;display:block;overflow:visible">
-        ${pieArcs}
-        ${legend}
-        <text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="11" font-weight="600" fill="#0A1E6E">${Math.round(total/1000)}k€</text>
-      </svg>
-      ${details.length>0?`<table style="width:100%;border-collapse:collapse;margin-top:8px">
-        <thead><tr style="background:#0A1E6E"><th style="padding:5px 10px;font-size:10px;color:white;text-align:left">Poste</th><th style="padding:5px 10px;font-size:10px;color:white">Cpte</th><th style="padding:5px 10px;font-size:10px;color:white;text-align:right">Montant</th><th style="padding:5px 10px;font-size:10px;color:white;text-align:right">%CA</th></tr></thead>
-        <tbody>${tableRows}</tbody>
-      </table>`:""}
+    return `
+    <div style="flex:1;min-width:0">
+      <div style="font-size:13px;font-weight:700;color:${N};margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid ${C}">${ent.name}</div>
+      <table style="width:100%;border-collapse:collapse;border-radius:6px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)">
+        <thead>
+          <tr style="background:${N};color:#fff">
+            <th style="padding:8px 12px;text-align:left;font-size:11px">Poste de charges</th>
+            <th style="padding:8px 12px;text-align:right;font-size:11px">Montant</th>
+            <th style="padding:8px 12px;text-align:right;font-size:11px">% CA</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}
+          <tr style="background:${N};color:#fff">
+            <td style="padding:8px 12px;font-size:12px;font-weight:700">TOTAL CHARGES</td>
+            <td style="padding:8px 12px;text-align:right;font-size:12px;font-weight:700">${gf(totalChg)}€</td>
+            <td style="padding:8px 12px;text-align:right;font-size:12px;font-weight:700">${pct(totalChg,ca)}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:6px;font-size:10px;color:#666">Base : CA 70x = ${gf(ca)}€ (hors subventions 74x)</div>
     </div>`;
-  });
+  }
 
-  return `<!-- SLIDE STRUCTURE CHARGES — GÉNÉRÉ CÔTÉ JS -->
-<div class="slide" style="width:1280px;min-height:720px;max-height:720px;background:#F4F6FB;display:flex;flex-direction:column;page-break-after:always;overflow:hidden">
-  <div class="header" style="background:linear-gradient(135deg,#001259,#00146E,#1A3BAA);height:72px;display:flex;align-items:center;padding:0 40px;justify-content:space-between;flex-shrink:0">
-    <div style="display:flex;align-items:center;gap:16px">${logoImg}<h1 style="color:white;font-size:18px;font-weight:700;margin:0">Structure des Charges — par Entité</h1></div>
-    <span style="color:#00C2CB;background:rgba(0,194,203,0.15);border:1px solid rgba(0,194,203,0.3);border-radius:20px;padding:4px 14px;font-size:11px;font-weight:600">Répartition ${exercice}</span>
-  </div>
-  <div style="flex:1;padding:16px 32px;overflow:hidden;display:flex;gap:16px;align-items:flex-start">
-    ${sections.join("")}
-  </div>
-  <div class="footer" style="background:#00146E;height:36px;display:flex;align-items:center;padding:0 40px;justify-content:space-between;flex-shrink:0">
-    <span style="color:rgba(255,255,255,0.5);font-size:11px">Confidentiel — KPLT</span>
-  </div>
-</div>`;
+  const tablesHtml = ents.map(e=>makeTable(e,parsedMap[e.id])).join("");
+
+  return `<div class="slide" style="width:1280px;min-height:720px;max-height:720px;background:${BG};display:flex;flex-direction:column;page-break-after:always;overflow:hidden">
+    <div class="header" style="background:linear-gradient(135deg,#001259,#00146E,#1A3BAA);height:72px;display:flex;align-items:center;padding:0 32px;gap:16px;flex-shrink:0">
+      <img id="klogo" src="" alt="KPLT" style="height:32px;width:auto">
+      <div style="flex:1">
+        <div style="font-size:18px;font-weight:700;color:#fff">STRUCTURE DES CHARGES</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.7)">Répartition par entité — Exercice ${answers.exercice||"N"}</div>
+      </div>
+      <div style="background:#00C2CB;color:#fff;padding:4px 12px;border-radius:12px;font-size:11px;font-weight:600">CHARGES</div>
+    </div>
+    <div style="flex:1;padding:20px 32px;display:flex;gap:24px;align-items:flex-start;overflow:hidden">
+      ${tablesHtml}
+    </div>
+    <div class="footer" style="background:#00146E;height:36px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;flex-shrink:0">
+      <span style="color:rgba(255,255,255,.7);font-size:10px">Confidentiel — KPLT</span>
+    </div>
+  </div>`;
 }
 
 
@@ -2608,7 +2620,14 @@ function buildSBalance(ents, parsedMap, type, n, total){
     </div>`;
   });
 
-  const warning = type==="clients"?`<div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:6px;padding:10px 14px;font-size:10px;color:#92400E;font-family:Inter,sans-serif;margin-top:10px">
+  const bilanRef = type==="fourn"
+    ? ents.map(e=>{const p=parsedMap[e.id];return p?e.name+": "+gf(p.fournissB)+"€ bilan":null;}).filter(Boolean).join(" | ")
+    : "";
+  const warning = type==="fourn" ? `<div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:6px;padding:10px 14px;font-size:10px;color:#92400E;font-family:Inter,sans-serif;margin-bottom:10px">
+    <strong>⚠ Balance âgée brute FEC = écritures non lettrées.</strong> Ces montants incluent des écritures comptables non soldées et peuvent dépasser les dettes réelles.
+    Solde bilan 401x (dette fournisseurs réelle) : <strong>${bilanRef}</strong>. Utiliser le solde bilan comme référence.
+  </div>` : type==="clients"?`<div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:6px;padding:10px 14px;font-size:10px;color:#92400E;font-family:Inter,sans-serif;margin-top:10px">
+    <strong>Balance âgée brute = écritures FEC non lettrées.</strong> Les montants >90j incluent les factures CPAM/mutuelles en attente de lettrage automatique — ils ne représentent PAS des impayés style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:6px;padding:10px 14px;font-size:10px;color:#92400E;font-family:Inter,sans-serif;margin-top:10px">
     <strong>Balance âgée brute = écritures FEC non lettrées.</strong> Les montants >90j incluent les factures CPAM/mutuelles en attente de lettrage automatique — ils ne représentent PAS des impayés réels. Le DSO réel est calculé sur les créances nettes.
   </div>`:"";
 
@@ -2716,7 +2735,20 @@ function buildSRatios(ents, parsedMap, parsedSILAE, answers, n, total){
   const gf=R.gf;
   
   let pratBrut=0; ents.forEach(e=>{const s=parsedSILAE&&parsedSILAE[e.id];if(s&&s.groupes&&s.groupes.praticiens)pratBrut+=s.groupes.praticiens.brut||0;});
-  const dso=()=>{let d=0,c=0;ents.forEach(e=>{const p=parsedMap[e.id];if(p&&p.DSO){d+=p.DSO;c++;}});return c?Math.round(d/c):null;};
+  const dso=()=>{
+    // DSO consolidé = DSO pondéré par CA (ignorer les DSO=0 si CA réel)
+    let totalCreances=0, totalCA=0;
+    const assoEnts = co.assoEnts;
+    const primaryEnts = assoEnts.length > 0 ? assoEnts : ents;
+    primaryEnts.forEach(e=>{
+      const p=parsedMap[e.id];
+      if(p&&p.CA>0){totalCreances+=p.creancesCliNettes||0; totalCA+=p.CA;}
+    });
+    if(totalCA>0&&totalCreances>=0) return Math.round(totalCreances/(totalCA/365));
+    // Fallback : première valeur non nulle
+    for(const e of ents){const p=parsedMap[e.id];if(p&&p.DSO>0)return p.DSO;}
+    return null;
+  };
 
   const ratios=[
     {label:"MS/CA",val:CA>0?R.pctN(co.cMS,CA):null,bench:"58–64%",lo:58,hi:64,unit:"%"},
@@ -2912,7 +2944,10 @@ function buildUserPrompt(){
       lines.push("  Autres produits (74-75-7x)  = "+gf(p.autresProd)+"€  = "+pct(p.autresProd,ca));
       lines.push("  TOTAL PRODUITS              = "+gf(p.CA+p.autresProd)+"€  = "+pct(p.CA+p.autresProd,ca));
       lines.push("CHARGES :");
-      lines.push("  Achats/Conso (60x)          = "+gf(p.achats)+"€  = "+pct(p.achats,ca));
+      lines.push("  Achats/Conso (60x) TOTAL     = "+gf(p.achats)+"€  = "+pct(p.achats,ca));
+      if(p.achats602>0) lines.push("    dont 602x consomm. RÉELS    = "+gf(p.achats602)+"€  = "+pct(p.achats602,ca)+" ← VRAIS CONSOMMABLES");
+      if(p.achatsVariStock!==0) lines.push("    dont 603x var.stocks        = "+gf(p.achatsVariStock)+"€  (peut être négatif = destockage)");
+      if(p.achatsInterco604>0) lines.push("    dont 604x prestations SAS    = "+gf(p.achatsInterco604)+"€  ← INTERCO À ÉLIMINER EN CONSOLIDATION");
       lines.push("  Charges ext (61-62x)        = "+gf(p.chargesExt)+"€  = "+pct(p.chargesExt,ca));
       lines.push("  Impôts/taxes (63x)          = "+gf(p.impots)+"€  = "+pct(p.impots,ca));
       lines.push("  Salaires (641x)             = "+gf(p.salaires)+"€  = "+pct(p.salaires,ca));
@@ -2921,6 +2956,8 @@ function buildUserPrompt(){
       lines.push("  DAP (68x)                   = "+gf(p.dotAmort)+"€  = "+pct(p.dotAmort,ca));
       lines.push("  Autres charges (65x)        = "+gf(p.autresChg)+"€  = "+pct(p.autresChg,ca));
       lines.push("  Charges fin (66x)           = "+gf(p.chgFin)+"€  = "+pct(p.chgFin,ca));
+      if(p.chgExcep>0||p.prodExcep>0) lines.push("  Résultat exceptionnel (67-77x) = "+gf(p.prodExcep-p.chgExcep)+"€  = "+pct(p.prodExcep-p.chgExcep,ca));
+      if(p.IS>0) lines.push("  IS (695x)                    = "+gf(-p.IS)+"€  = "+pct(-p.IS,ca));
       lines.push("  Produits fin (76x)          = "+gf(p.prodFin)+"€  = "+pct(p.prodFin,ca));
       lines.push("  Charges excep (67x)         = "+gf(p.chgExcep)+"€  = "+pct(p.chgExcep,ca));
       lines.push("  Produits excep (77x)        = "+gf(p.prodExcep)+"€  = "+pct(p.prodExcep,ca));
@@ -2999,13 +3036,19 @@ function buildUserPrompt(){
       lines.push("FRNG = "+gf(p.FRNG)+"E | BFR = "+gf(p.BFR)+"E | TN = "+gf(p.TN)+"E");
       lines.push("DSO = "+p.DSO+"j — formule : "+gf(p.creancesCliNettes)+"€ nettes / ("+gf(p.CA)+"€/365) — NE PAS RECALCULER");
       lines.push("DPO = "+p.DPO+"j | CAF = "+gf(p.CAF)+"€ (RN "+gf(p.RN)+"€ + DAP "+gf(p.dotAmort)+"€) — NE PAS RECALCULER");
-      lines.push("Consommables 602 = "+gf(conso602)+"€ | ratio/CA = "+pct(conso602,p.CA)+" — UTILISER CE RATIO PARTOUT DANS LE RAPPORT");
+      // Utiliser p.achats602 si disponible (plus précis que comptesList)
+      const conso602Real = (p.achats602||0)+(p.achatsVariStock||0);
+      const consoFinal = conso602Real>0 ? conso602Real : conso602;
+      const interco604 = p.achatsInterco604||0;
+      lines.push("Consommables RÉELS (602x+603x) = "+gf(consoFinal)+"E | ratio/CA 70x = "+pct(consoFinal,p.CA)+" — CA 70x="+gf(p.CA)+"E HORS SUBVENTIONS — UTILISER CE RATIO");
+      if(interco604>0) lines.push("Prestations interco (604x SAS) = "+gf(interco604)+"E — NE PAS inclure dans consommables, afficher séparément dans P&L comme Refacturations SAS");
+      if(p.achats>consoFinal+interco604) lines.push("Autres achats (607x+606x+...) = "+gf(p.achats-consoFinal-interco604)+"E");
       lines.push("MS/CA (63+64) = "+pct(p.msAvecTaxes,p.CA)+" — ratio officiel");
       lines.push("Alertes: "+(p.alerts.length?p.alerts.join(" | "):"Aucune"));
       lines.push("");
       lines.push("=== FLUX DE TRÉSORERIE (données disponibles) ===");
       lines.push("CAF = "+gf(p.CAF)+"€ — NE PAS MODIFIER");
-        lines.push("DAP = "+gf(p.dotAmort)+"E - utiliser cette valeur dans flux treso, NE PAS mettre 0");
+        lines.push("DAP (68x) = "+gf(p.dotAmort)+"€"+(p.dotAmort===0?" — AUCUNE DOTATION 68x DANS LE FEC : afficher 0€ (correct si immobilisations nulles ou amorties)":"— utiliser exactement cette valeur dans flux tresorerie et CAF"));
       lines.push("ΔBFR, investissements, financements : N/D si pas de bilan N-1 fourni → écrire explicitement N/D sur la slide");
       lines.push("⚠️ INTERDICTION d'inventer ΔBFR ou investissements — afficher N/D si non calculable");
       lines.push("");
@@ -3096,9 +3139,15 @@ function buildUserPrompt(){
         if(f.type==="pdf_text"){
           // Texte extrait du PDF - injecter directement (compact)
           lines.push("=== "+sid.toUpperCase()+" PDF : "+f.name+" ===");
-          // Tronquer ? 8000 chars max pour rester sous 2000 tokens par PDF
           lines.push(f.data.slice(0,8000)+(f.data.length>8000?"\n[tronqué à 8000 chars]":""));
           if(sid==="emprunts") hasPdfEmprunts=true;
+          // Plaquette ou bilan détaillé = source des données N-1
+          if(sid==="bilan"||sid==="plaquette"){
+            lines.push("INSTRUCTION EXTRACTION N-1 : Ce document contient les chiffres N et N-1 côte à côte.");
+            lines.push("Extraire du texte ci-dessus les valeurs N-1 : CA N-1, RN N-1, EBITDA N-1, Tréso N-1, Actif total N-1, CP N-1.");
+            lines.push("Utiliser ces valeurs N-1 pour : ΔBFR = BFR(N) - BFR(N-1) | variation trésorerie | flux investissement | comparaison bilan.");
+            lines.push("Si les valeurs N-1 sont lisibles dans le texte → les utiliser. Si absentes → N/D.");
+          }
         } else if(f.type==="pdf"){
           // Petit PDF base64 - juste signaler (sera envoy? en natif si possible)
           lines.push(sid.toUpperCase()+" PDF ("+f.name+") : "+Math.round((f.data||"").length/1000)+"k chars base64 - contenu lisible dans le document joint");
@@ -3109,27 +3158,36 @@ function buildUserPrompt(){
       });
     });
 
-    // Instructions dette nette selon source disponible
-    if(hasPdfEmprunts){
-      lines.push("DETTE NETTE — SOURCES : fichier(s) emprunt/leasing PDF joints. Extraire les capitaux RESTANT DÛS au 31/12 pour chaque ligne (appliquer CAS 1/CAS 2/CAS 3 définis dans le prompt). DN = Σ(restant dûs) - trésorerie="+gf(p?p.dispoB:0)+"€. Afficher tableau : nature|capital restant dû|taux|échéance finale.");
-    } else {
-      // Emprunts saisis/calcul?s dans le questionnaire (tableau emprunts[])
-      const empruntsQST=(a.emprunts||[]).filter(e=>e.nom&&(e.crdCalcule!==null&&e.crdCalcule!==undefined));
-      if(empruntsQST.length>0){
-        const totalCRD=empruntsQST.reduce((s,e)=>s+(e.crdCalcule||0),0);
-        lines.push("DETTE NETTE — EMPRUNTS CALCULÉS/SAISIS (données exactes) :");
-        empruntsQST.forEach((e,i)=>{
-          const src=e.crdCalcule!==null?"Calculé ("+e.nbEch+" éch. "+e.freq+" depuis "+e.dateDebut+")":"Saisi manuel";
-          const crdStr=e.crdCalcule===0?"0€ (soldé)":gf(e.crdCalcule)+"€";
-          lines.push("  "+(i+1)+". "+e.nom+" ["+e.type+"] | CRD = "+crdStr+" | Taux = "+(e.taux||"N/D")+"% | Nb éch. = "+(e.nbEch||"N/D")+" | 1ère éch. = "+(e.dateDebut||"N/D")+" | Fréq. = "+(e.freq||"N/D")+" | Source : "+src);
+    // ── DETTE NETTE : 164x (bilan auto) + leasings saisis ──
+    {
+      // 1. Emprunt(s) bancaire(s) = solde compte 164x dans le FEC (CRD exact au 31/12)
+      const crd164 = p ? (p.dettesFinB||0) : 0;
+      const tresoEnt = p ? (p.dispoB||0) : 0;
+
+      // 2. Leasings saisis dans le questionnaire
+      const leasings = (a.emprunts||[]).filter(e=>e.nom&&e.nom.trim());
+      const totalLeasingCRD = leasings.reduce((s,e)=>{
+        const crd = e.crdSaisi ? parseInt(e.crdSaisi) : (e.crdCalcule||0);
+        return s+crd;
+      },0);
+
+      const totalCRD = crd164 + totalLeasingCRD;
+      const dn = totalCRD - tresoEnt;
+
+      lines.push("=== DETTE NETTE "+ent.name+" ===");
+      lines.push("Emprunt(s) bancaire(s) 164x (CRD bilan 31/12) = "+gf(crd164)+"€ — SOURCE : FEC compte 164x");
+      if(leasings.length>0){
+        lines.push("Leasings saisis ("+leasings.length+") :");
+        leasings.forEach((e,i)=>{
+          const crd = e.crdSaisi ? parseInt(e.crdSaisi) : (e.crdCalcule||0);
+          const detail = e.loyer&&e.nbRestants ? e.loyer+"€/mois × "+e.nbRestants+" loyers restants" : "CRD saisi";
+          lines.push("  "+(i+1)+". "+e.nom+" | CRD = "+gf(crd)+"€ | "+detail+(e.dateFin?" | Fin : "+e.dateFin:""));
         });
-        const dn=totalCRD-(p?p.dispoB:0);
-        lines.push("  TOTAL CRD = "+gf(totalCRD)+"€ | Trésorerie = "+gf(p?p.dispoB:0)+"€ | DETTE NETTE = "+gf(dn)+"€");
       } else {
-        lines.push("DETTE NETTE — AUCUN ÉCHÉANCIER PDF ET AUCUN EMPRUNT SAISI DANS LE QUESTIONNAIRE :");
-        lines.push("  Capital restant dû = N/D pour chaque emprunt. Afficher N/D dans le tableau.");
-        lines.push("  Note : solde comptable 16x = "+gf(p?p.dettesFinB:0)+"€ (≠ capital restant dû — à titre informatif uniquement, ne pas utiliser comme CRD).");
+        lines.push("Leasings : aucun saisi dans le questionnaire");
       }
+      lines.push("Trésorerie = "+gf(tresoEnt)+"€ | TOTAL CRD = "+gf(totalCRD)+"€ | DETTE NETTE = "+gf(dn)+"€");
+      lines.push("DN/EBITDA = "+((p&&p.EBITDA&&p.EBITDA!==0)?(dn/p.EBITDA).toFixed(2)+"x":"N/D"));
     }
     lines.push("");
   });
@@ -3181,7 +3239,7 @@ function buildUserPrompt(){
   const cRNajuste=cRN+(a.groupeTVA!=="Oui"?tvaPerdue:0);
   lines.push("CONSOLIDATION P&L :");
   lines.push("  CA CONSOLIDE = "+gf(cCA)+"€ (Asso uniquement — CA SAS = "+gf(intercoCA)+"€ elimine interco)");
-  lines.push("  EBITDA CONSOLIDE = "+gf(cEBITDA)+"€ ("+(cCA>0?((cEBITDA/cCA)*100).toFixed(1)+"%":"N/D")+" CA consolide)");
+  lines.push("  ⚠️ EBITDA CONSOLIDE = "+gf(cEBITDA)+"E ("+(cCA>0?((cEBITDA/cCA)*100).toFixed(1)+"%":"N/D")+" CA) — COPIER CET EXACT CHIFFRE EN S3 ET S7 — NE JAMAIS RECALCULER — = SOMME EBITDA ASSO + EBITDA SAS = "+gf(cEBITDA)+"E");
   lines.push("  RN CONSOLIDE brut = "+gf(cRN)+"€");
   if(a.groupeTVA!=="Oui"&&tvaPerdue>0){
     lines.push("  GROUPE TVA NON ACTIF : TVA perdue sur refacturations SAS = ~"+gf(tvaPerdue)+"€ ("+gf(intercoCA)+"€ x 20%)");
@@ -3264,7 +3322,13 @@ function buildUserPrompt(){
   lines.push("❌ Ce ratio ne peut pas être calculé avec les données disponibles → afficher N/D");
   lines.push("");
   lines.push("LOGO OBLIGATOIRE SUR TOUTES LES SLIDES Y COMPRIS PAGE DE GARDE :\n- Header de chaque slide (sauf séparateurs) : <img id=\"klogo\" src=\"\" alt=\"KPLT\" style=\"height:32px;width:auto\"> AVEC l'attribut id=\"klogo\" — OBLIGATOIRE\n- Page de garde (SLIDE 1 cover) : <img id=\"klogo\" src=\"\" alt=\"KPLT\" style=\"height:56px;width:auto;display:block;margin:0 auto 24px\"> centré\n⚠️ Ne JAMAIS écrire une autre valeur dans src. Le JS injectera automatiquement le bon logo. Si src est absent ou différent de vide, le logo n'apparaîtra pas.");
-  lines.push("Génère maintenant le rapport HTML COMPLET avec TOUTES les slides. Commence DIRECTEMENT par <!DOCTYPE html>. HTML minifié, zéro commentaire. Toutes les slides sont importantes, ne pas bâcler les dernières.");
+  if(ST._generatePasse===3){
+    lines.push("PASSE 3 (slides 21 a 25 sur 25) - LISTE EXACTE, SANS DOCTYPE/HTML/HEAD/BODY:\nS21: BALANCE AGEE CLIENTS - tableau 4 tranches 0-30j|30-60j|60-90j|>90j par entite + avertissement amber CPAM lettrage + DSO reel par entite\nS22: ENDETTEMENT DETTE NETTE - lire les PDFs joints (emprunts + leasing). Tableau: Nature|Capital Restant Du|Taux|Echeance|Mensualite. Si PDF absent: utiliser solde 164x pour emprunts. DN = Somme CRD - tresorerie. DN/EBITDA. Leasing: lire le PDF si joint, sinon N/D.\nS23: GLOSSAIRE - tableau 2 colonnes Terme|Definition simple. 14 termes: CA EBITDA RN FRNG BFR TN CAF DSO DPO IS DAP MS/CA DN CC51.\nS24: CONCLUSION STRATEGIQUE - fond #00146E. 3 colonnes: 💪 Points forts | ⚠️ Points vigilance | 🎯 Recommandations. Texte blanc.\nS25: DISCLAIMER - texte legal confidentiel KPLT.\nINTERDIT: activite mensuelle | ratios benchmarks | valorisation | SWOT. Numerote 21/25 a 25/25. Header navy gradient + footer KPLT.");
+  } else if(ST._generatePasse===2){
+    lines.push("PASSE 2 (slides 14 a 20 sur 25) - Genere ces 7 slides dans l ordre, sans DOCTYPE/html/head/body: S14-EQUILIBRE FINANCIER FRNG BFR TN 3 cards | S15-FLUX TRESORERIE CAF par entite | S16-BFR CYCLE DSO DPO tableau SVG | S17-MASSE SALARIALE categories ETP brut cout %CA | S18-PRODUCTIVITE PRATICIENS nominatif brut|cout|mois|CA|ratio | S19-TOP FOURNISSEURS par entite solde DPO | S20-BALANCE AGEE FOURNISSEURS SVG 4 tranches par entite. Numerote 14/25 a 20/25. Header navy + footer KPLT.");
+  } else {
+    lines.push("PASSE 1 — Genere EXACTEMENT S1 a S13 dans cet ordre:\nS1: COVER — fond navy, logo, titre, entites, exercice\nS2: CONTEXTE GROUPE — tableau infos juridiques\nS3: KPIs CONSOLIDES — 8 cards CA|EBITDA|EBITDA%|RN|Tresorerie|Praticiens/CA|MS/CA|DSO\nS4: STRUCTURE GROUPE — SVG organigramme Asso+SAS+flèches\nS5: P&L ASSO — tableau CR compact font 11px padding 5px, RN visible en bas\nS6: P&L SAS — idem S5\nS7: CONSOLIDATION — tableau 3 colonnes Asso|SAS|Consolide\nS8: WATERFALL — SVG barres CA→consomm→charges→MS→EBITDA→DAP→RN\nS9: STRUCTURE CHARGES — 2 TABLEAUX par entite INTERDIT camembert\nS10: BILAN ASSO — tableau actif/passif equilibre\nS11: BILAN SAS — idem S10\nS12: DETAIL PRATICIENS — tableau nominatif brut|cout|mois|CA|ratio\nS13: ACTIVITE MENSUELLE — SVG 12 barres Jan-Dec\nTermine avec </body></html> apres S13. CSS complet dans <head>.");
+  };
   const fullPrompt = lines.join("\n");
   // S?curit? absolue : tronquer ? 140k chars max (35k tokens) pour rester sous 200k avec le syst?me
   const MAX_PROMPT_CHARS = 50000; // 80k chars ? 120k tokens (fran?ais = ~1.5 tok/char)
@@ -3779,14 +3843,13 @@ function renderStep3(){
 
 
     <div class="q-section" id="section-emprunts">
-      <div class="q-section-title">🏦 Emprunts & Leasing — Capital restant dû</div>
+      <div class="q-section-title">🏦 Leasings en cours</div>
       <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:12px">
-        <strong style="color:#00C2CB">Saisissez les CRD directement ici</strong> — ne joindre aucun PDF d'échéancier (trop lourd pour l'API).<br>
-        Pour un <strong>emprunt bancaire</strong> : remplir nom, taux, nb échéances, date 1ère éch. → CRD calculé auto.<br>
-        Pour un <strong>leasing</strong> : remplir nom + CRD saisi directement (loyers restants × loyer HT).
+        <strong style="color:#00C2CB">Les emprunts bancaires sont lus automatiquement</strong> depuis le compte 164x du bilan (FEC).<br>
+        Saisissez ici uniquement les <strong>leasings/crédits-bails</strong> (hors bilan — non visibles dans le FEC).
       </div>
       <div id="emprunts-container"></div>
-      <button type="button" id="btn-add-emprunt" style="margin-top:8px;background:transparent;border:1px solid rgba(0,194,203,0.4);color:var(--C);border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer">+ Ajouter une ligne</button>
+      <button type="button" id="btn-add-emprunt" style="margin-top:8px;background:transparent;border:1px solid rgba(0,194,203,0.4);color:var(--C);border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer">+ Ajouter un leasing</button>
     </div>
 
     <div class="q-section">
@@ -3841,8 +3904,20 @@ function renderStep5(){
       if(!window.html2canvas){
         await new Promise((res,rej)=>{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";s.onload=res;s.onerror=rej;document.head.appendChild(s);});
       }
-      if(!window.jsPDF){
-        await new Promise((res,rej)=>{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";s.onload=res;s.onerror=rej;document.head.appendChild(s);});
+      if(!window.jspdf){
+        await new Promise((res,rej)=>{
+          const s=document.createElement("script");
+          s.src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+          s.onload=()=>{ setTimeout(res, 200); };
+          s.onerror=()=>{
+            const s2=document.createElement("script");
+            s2.src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js";
+            s2.onload=()=>{ setTimeout(res, 200); };
+            s2.onerror=rej;
+            document.head.appendChild(s2);
+          };
+          document.head.appendChild(s);
+        });
       }
       // Iframe pour rendu fid?le
       const ex=document.getElementById("pdf-iframe");if(ex)ex.remove();
@@ -3860,7 +3935,13 @@ function renderStep5(){
       const slides=d.querySelectorAll(".slide, [class*='slide']");
       if(!slides.length){alert("Impossible de détecter les slides. Exportez en HTML.");ifr.remove();btn.disabled=false;btn.textContent="🖨 PDF (qualité max)";return;}
 
-      const {jsPDF:JSPDF}=window.jsPDF;
+      // jsPDF UMD expose window.jspdf.jsPDF ou window.jsPDF directement
+      // jsPDF UMD 2.5.1 expose window.jspdf.jsPDF
+      const jspdfLib = window.jspdf || {};
+      const JSPDF = jspdfLib.jsPDF || window.jsPDF || null;
+      if(!JSPDF || typeof JSPDF !== "function"){
+        throw new Error("jsPDF non disponible. Utilisez Ctrl+P pour imprimer en PDF.");
+      }
       const pdf=new JSPDF({orientation:"landscape",unit:"mm",format:[297,167.0625]});
 
       for(let i=0;i<slides.length;i++){
@@ -4432,9 +4513,35 @@ async function sendIa(q){
 // ??????????????????????????????????????????
 function buildUserContent(){
   const textPrompt = buildUserPrompt();
-  // Le texte des PDFs est déjà injecté dans buildUserPrompt via extractPdfTextIfNeeded
-  // On n'envoie PLUS de PDFs en base64 pour éviter le dépassement de tokens
-  return [{type:"text", text:textPrompt}];
+  const content = [{type:"text", text:textPrompt}];
+
+  // Ajouter les petits PDFs en base64 natif (<=80Ko = max 107k chars base64 = ~27k tokens)
+  // Les gros PDFs sont déjà extraits en texte via extractPdfTextIfNeeded et injectés dans le prompt
+  let totalB64 = 0;
+  const MAX_B64_TOTAL = 600000; // 600k chars base64 max (~150k tokens) - 3 passes disponibles
+  ST.ents.forEach(ent=>{
+    ["emprunts","bilan","plaquette"].forEach(sid=>{
+      const keys = Object.keys(ST.files).filter(k=>
+        (k===ent.id+"__"+sid||k.startsWith(ent.id+"__"+sid+"__"))
+        && ST.files[k] && ST.files[k].type==="pdf"
+      );
+      keys.forEach(k=>{
+        const f = ST.files[k];
+        const sz = (f.data||"").length;
+        if(totalB64 + sz <= MAX_B64_TOTAL){
+          totalB64 += sz;
+          content.push({
+            type:"document",
+            source:{type:"base64", media_type:"application/pdf", data:f.data},
+            title:f.name+" ("+ent.name+")"
+          });
+          console.log("PDF joint (natif):", f.name, Math.round(sz/1000)+"k chars");
+        }
+      });
+    });
+  });
+
+  return content;
 }
 
 // ══════════════════════════════════════════
@@ -4587,7 +4694,7 @@ async function generate(){
         const sysFinal = sys.length > 20000 ? sys.slice(0,20000)+"\n[SYS TRONQUÉ]" : sys;
         return JSON.stringify({
           model:"claude-sonnet-4-20250514",
-          max_tokens:64000,
+          max_tokens:32000,
           stream:true,
           system:sysFinal,
           messages:[{role:"user",content:ucFinal}]
@@ -4660,35 +4767,7 @@ async function generate(){
       return 'style="'+fixed+'"';
     });
 
-    // Injecter logo dans tous les img#klogo (y compris page de garde)
-    const logoSrc=typeof KOPILOT_LOGO_B64!=="undefined"?KOPILOT_LOGO_B64:"";
-    if(logoSrc){
-      // 1. Cibler img avec id="klogo" — forcer src sur TOUTES les occurrences
-      html=html.replace(/<img([^>]*)id=["']klogo["']([^>]*)>/gi,(m,b,a)=>{
-        const cleanB=b.replace(/\s*src\s*=\s*["'][^"']*["']/gi,'');
-        const cleanA=a.replace(/\s*src\s*=\s*["'][^"']*["']/gi,'');
-        return '<img'+cleanB+'id="klogo"'+cleanA+' src="'+logoSrc+'">';
-      });
-      // 1b. Aussi chercher src="" ou src='' vides sur img#klogo (cas où src est déjà présent mais vide)
-      html=html.replace(/(<img[^>]*id=["']klogo["'][^>]*)src=["']["']/gi,(m,before)=>{
-        return before+'src="'+logoSrc+'"';
-      });
-      // 2. Aussi cibler img avec alt contenant "Kopilot" ou "KPLT" mais sans id klogo
-      html=html.replace(/<img([^>]*alt=["'][^"']*(?:[Kk]opilot|KPLT)[^"']*["'][^>]*)>/gi,(m,attrs)=>{
-        if(attrs.includes('id="klogo"')||attrs.includes("id='klogo'"))return m; // déjà traité
-        const cleaned=attrs.replace(/\s*src\s*=\s*["'][^"']*["']/gi,'');
-        return '<img id="klogo"'+cleaned+' src="'+logoSrc+'">';
-      });
-      // 3. Passe finale : img sans src ou src="" dans les headers de slide
-      html=html.replace(/<img([^>]*?)src=["']['"]["']([^>]*)>/gi,(m,b,a)=>{
-        // Seulement dans les headers (recherche limitée au contexte header)
-        if(b.includes('height:32')||b.includes('height:56')||b.includes('height:48')){
-          return '<img'+b+'src="'+logoSrc+'"'+a+'>';
-        }
-        return m;
-      });
-    }
-
+    
     // S'assurer que les slides bilan inline ont bien page-break-after:always
     html = html.replace(
       /(<div style="width:1280px;min-height:720px[^"]*")[^>]*>/g,
@@ -4702,36 +4781,166 @@ async function generate(){
     (function injectJSSlides(){
       try {
         const jsSlides = buildJSSlides(ST.ents, ST.parsed, ST.parsedSILAE, ST.answers);
-        // Remplacer les marqueurs laissés par le modèle par les slides JS
-        jsSlides.forEach(s=>{
-          if(s.html && s.marker){
-            // Remplacer le marqueur dans le HTML
-            html = html.replace(new RegExp(`<!--\s*${s.marker}\s*-->`, 'g'), s.html);
-          } else if(s.html && !s.marker){
-            // Les slides JS pures sont injectées via CHARGES_SLIDE_START pattern déjà géré
-            // ou via les blocs BILAN_SLIDE_START/END
-          }
-        });
-
-        // Reconstruire le rapport complet avec slides JS en tête
-        // Trouver le body du HTML généré par le modèle
-        const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
-        if(bodyMatch){
-          const modelBody = bodyMatch[1];
-          // Extraire les slides modèle (marqueurs résolus + slides narratives)
-          const modelSlides = modelBody.match(/<div[^>]*class="slide[^"]*"[\s\S]*?(?=<div[^>]*class="slide|$)/g)||[];
-          
-          // Slides JS complètes dans l'ordre
-          const jsOnlySlides = jsSlides.filter(s=>s.html&&!s.marker).map(s=>s.html);
-          
-          // Pour l'instant : on laisse le HTML du modèle tel quel
-          // et on remplace juste les slides JS pré-calculées via marqueurs
+        
+        // 1. Remplacer STRUCTURE DES CHARGES par tableaux JS
+        const chargesHtml = buildChargesSlide(ST.ents, ST.parsed, ST.answers);
+        if(chargesHtml){
+          const allSlidesChg = html.split(/(?=<div[^>]*class="slide[^"]*")/);
+          html = allSlidesChg.map(s => s.includes("STRUCTURE DES CHARGES") ? chargesHtml : s).join("");
         }
+        
+        // 2. Supprimer les div.slide-number qui doublonnent (generes par le modele)
+        // Le modele genere parfois div.slide + div.slide-number pour la meme slide
+        html = html.replace(/<div[^>]*class="slide-number"[^>]*>[\s\S]*?(?=<div[^>]*class="slide[^"]*">|<\/body>)/g, '');
+        
+        // 3. Nettoyer les slides vides (header sans contenu)
+        // Une slide est "vide" si son contenu apr?s le header fait moins de 50 chars
+        const slideSegments = html.split(/(?=<div[^>]*class="slide(?!\-)[^"]*")/);
+        html = slideSegments.map(seg => {
+          if(!seg.includes('class="slide')) return seg;
+          const headerEnd = seg.indexOf('</div>', seg.indexOf('class="header"'));
+          if(headerEnd < 0) return seg;
+          const afterHeader = seg.slice(headerEnd+6).replace(/<[^>]+>/g,'').trim();
+          if(afterHeader.length < 30 && !seg.includes('cover')){
+            return ''; // Supprimer slide vide
+          }
+          return seg;
+        }).join('');
+        
       } catch(e){
         console.warn("injectJSSlides error:", e.message);
       }
     })();
 
+
+    // ── PASSE 2 : S14-S27 ──
+    const prog2=document.getElementById("prog");
+    const pmsg2=document.getElementById("prog-msg");
+    if(pmsg2)pmsg2.textContent="Passe 2/2 — S14 a S27...";
+    if(prog2)prog2.style.width="50%";
+
+    ST._generatePasse=2;
+    let accumulated2="";
+    const r2=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "x-api-key":ST.apiKey,
+        "anthropic-version":"2023-06-01",
+        "anthropic-dangerous-direct-browser-access":"true",
+        "anthropic-beta":"pdfs-2024-09-25"
+      },
+      body:(()=>{
+        const sys2=getSystemPrompt();
+        const uc2=buildUserContent();
+        const uc2Final=uc2.map(b=>{
+          if(b.type==="text"&&b.text.length>50000)
+            return {type:"text",text:b.text.slice(0,50000)+"\n[TRONQUE]"};
+          return b;
+        });
+        const sys2Final=sys2.length>20000?sys2.slice(0,20000)+"\n[SYS TRONQUE]":sys2;
+        return JSON.stringify({
+          model:"claude-sonnet-4-20250514",
+          max_tokens:32000,
+          stream:true,
+          system:sys2Final,
+          messages:[{role:"user",content:uc2Final}]
+        });
+      })()
+    });
+    if(!r2.ok){const e2=await r2.json().catch(()=>({}));throw new Error("Erreur API passe 2: "+(e2.error?.message||r2.status));}
+    const reader2=r2.body.getReader();
+    const decoder2=new TextDecoder();
+    let buffer2="";
+    while(true){
+      const {done:d2,value:v2}=await reader2.read();
+      if(d2)break;
+      buffer2+=decoder2.decode(v2,{stream:true});
+      const lines2=buffer2.split("\n");
+      buffer2=lines2.pop()||"";
+      for(const ln2 of lines2){
+        if(!ln2.startsWith("data:"))continue;
+        const dat2=ln2.slice(5).trim();
+        if(dat2==="[DONE]")continue;
+        try{const j2=JSON.parse(dat2);if(j2.type==="content_block_delta"&&j2.delta?.type==="text_delta"){accumulated2+=j2.delta.text||""}}catch(e){}
+      }
+      if(prog2){const w=parseFloat(prog2.style.width)||50;if(w<95)prog2.style.width=(w+0.1)+"%";}
+    }
+    ST._generatePasse=1;
+
+    // -- PASSE 3 : S21-S26 --
+    const pmsg3=document.getElementById("prog-msg");
+    const prog3=document.getElementById("prog");
+    if(pmsg3)pmsg3.textContent="Passe 3/3 - S21 a S26 (balance clients, activite, dette, glossaire, conclusion)...";
+    if(prog3)prog3.style.width="75%";
+
+    ST._generatePasse=3;
+    let accumulated3="";
+    const r3=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "x-api-key":ST.apiKey,
+        "anthropic-version":"2023-06-01",
+        "anthropic-dangerous-direct-browser-access":"true",
+        "anthropic-beta":"pdfs-2024-09-25"
+      },
+      body:(()=>{
+        const sys3=getSystemPrompt();
+        const uc3=buildUserContent();
+        const uc3Final=uc3.map(b=>{
+          if(b.type==="text"&&b.text.length>50000)
+            return {type:"text",text:b.text.slice(0,50000)+"\n[TRONQUE]"};
+          return b;
+        });
+        const sys3Final=sys3.length>20000?sys3.slice(0,20000)+"\n[SYS TRONQUE]":sys3;
+        return JSON.stringify({
+          model:"claude-sonnet-4-20250514",
+          max_tokens:48000,
+          stream:true,
+          system:sys3Final,
+          messages:[{role:"user",content:uc3Final}]
+        });
+      })()
+    });
+    if(!r3.ok){const e3=await r3.json().catch(()=>({}));throw new Error("Erreur API passe 3: "+(e3.error?.message||r3.status));}
+    const reader3=r3.body.getReader();
+    const decoder3=new TextDecoder();
+    let buffer3="";
+    while(true){
+      const {done:d3,value:v3}=await reader3.read();
+      if(d3)break;
+      buffer3+=decoder3.decode(v3,{stream:true});
+      const lines3=buffer3.split("\n");
+      buffer3=lines3.pop()||"";
+      for(const ln3 of lines3){
+        if(!ln3.startsWith("data:"))continue;
+        const dat3=ln3.slice(5).trim();
+        if(dat3==="[DONE]")continue;
+        try{const j3=JSON.parse(dat3);if(j3.type==="content_block_delta"&&j3.delta?.type==="text_delta"){accumulated3+=j3.delta.text||""}}catch(e){}
+      }
+      if(prog3){const w=parseFloat(prog3.style.width)||75;if(w<95)prog3.style.width=(w+0.08)+"%";}
+    }
+    ST._generatePasse=1;
+
+    // Concaténer : insérer slides passe2 avant </body> de passe1
+    const slides2=accumulated2.replace(/<\/?(html|head|body|!DOCTYPE)[^>]*>/gi,"").trim();
+    const slides3=accumulated3.replace(/<\/?(html|head|body|!DOCTYPE)[^>]*>/gi,"").trim();
+    accumulated=accumulated.replace(/<\/body>\s*<\/html>/i, slides2+"\n"+slides3+"\n</body></html>");
+    // FIX: réassigner html depuis accumulated complet (passe1 + passe2)
+    html=accumulated.replace(/^```html\n?/,"").replace(/\n?```$/,"").trim();
+
+    // Injecter logo KPLT sur toutes les slides
+    const logoSrc = typeof KOPILOT_LOGO_B64 !== "undefined" ? KOPILOT_LOGO_B64 : "";
+    if(logoSrc){
+      // Regex robuste : remplacer src dans TOUT img#klogo quelle que soit l'ordre des attributs
+      html = html.replace(/<img[^>]*id=["']klogo["'][^>]*>/gi, (tag)=>{
+        if(tag.includes('src='))
+          return tag.replace(/src="[^"]*"/, 'src="'+logoSrc+'"').replace(/src='[^']*'/, "src='"+logoSrc+"'");
+        return tag.replace('>', ' src="'+logoSrc+'">');
+      });
+    }
+    
     // PP0 — Supprimer le CA de la cover (ne doit pas apparaître page de garde)
     html = html.replace(/<div[^>]*class="cover-ca[^"]*"[^>]*>[\s\S]{0,200}?<\/div>/gi, '');
     html = html.replace(/<div[^>]*class="[^"]*ca-label[^"]*"[^>]*>[\s\S]{0,200}?<\/div>/gi, '');
@@ -4894,7 +5103,7 @@ async function extractPdfTextIfNeeded(key){
   const f = ST.files[key];
   if(!f || f.type!=="pdf") return;
   const sizeKo = f.sizeKo || 0;
-  if(sizeKo <= 80) return; // Petit PDF - garder base64
+  if(sizeKo <= 40) return; // Petit PDF <= 40Ko - garder base64, les gros sont extraits en texte
 
   try {
     if(!window.pdfjsLib){
@@ -5225,63 +5434,42 @@ function bindEvents(){
     function formatEuro(v){return v===null?"N/D":v.toLocaleString("fr-FR")+"€";}
 
     function renderLigne(e,idx){
-      const ex=parseInt(ST.answers.exercice)||new Date().getFullYear();
-      const crd=(e.montant&&e.nbEch&&e.dateDebut&&e.freq)?
-        calcCRD(parseFloat(e.montant),parseFloat(e.taux||0),parseInt(e.nbEch),e.dateDebut,e.freq,e.type,ex):null;
-      if(e.crdCalcule!==crd){e.crdCalcule=crd;}
-      const crdDisplay=crd===null?"—":crd===0?"0€ (soldé)":crd.toLocaleString("fr-FR")+"€";
-      const crdColor=crd===null?"#888":crd===0?"#22C55E":"#00C2CB";
+      // Calcul auto CRD leasing : loyer × nb restants si saisi
+      const crdAuto = (e.loyer && e.nbRestants) ? Math.round(parseFloat(e.loyer)*parseInt(e.nbRestants)) : null;
+      if(e.crdCalcule!==crdAuto) e.crdCalcule=crdAuto;
+      const crdDisplay = e.crdSaisi ? parseInt(e.crdSaisi).toLocaleString("fr-FR")+"€"
+        : crdAuto ? crdAuto.toLocaleString("fr-FR")+"€ (calculé)"
+        : "—";
 
-      return`<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(0,194,203,0.2);border-radius:8px;padding:14px;margin-bottom:12px" data-idx="${idx}">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-    <span style="font-size:12px;font-weight:600;color:var(--C)">Ligne ${idx+1}</span>
-    <div style="display:flex;align-items:center;gap:12px">
-      <span style="font-size:13px;font-weight:700;color:${crdColor}">CRD 31/12/${ex} : ${crdDisplay}</span>
-      <button type="button" data-del="${idx}" style="background:transparent;border:1px solid rgba(239,68,68,0.4);color:#EF4444;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer">✕</button>
-    </div>
-  </div>
-  <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-bottom:8px">
-    <div>
-      <label style="font-size:10px;color:rgba(255,255,255,0.5);display:block;margin-bottom:3px">Nature / Référence</label>
-      <input class="inp emp-field" data-idx="${idx}" data-k="nom" placeholder="Ex : PGE LCL 20927413" value="${e.nom||""}" style="width:100%">
-    </div>
-    <div>
-      <label style="font-size:10px;color:rgba(255,255,255,0.5);display:block;margin-bottom:3px">Type</label>
-      <select class="inp emp-field" data-idx="${idx}" data-k="type" style="width:100%">
-        <option value="emprunt" ${(e.type||"emprunt")==="emprunt"?"selected":""}>Emprunt amortissable</option>
-        <option value="leasing" ${e.type==="leasing"?"selected":""}>Leasing / CBS (TTC)</option>
-        <option value="pge" ${e.type==="pge"?"selected":""}>PGE</option>
-      </select>
-    </div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:8px">
-    <div>
-      <label style="font-size:10px;color:rgba(255,255,255,0.5);display:block;margin-bottom:3px">Montant initial (€)</label>
-      <input class="inp emp-field" data-idx="${idx}" data-k="montant" placeholder="Ex : 50000" value="${e.montant||""}" type="number" min="0" style="width:100%">
-    </div>
-    <div>
-      <label style="font-size:10px;color:rgba(255,255,255,0.5);display:block;margin-bottom:3px">Taux annuel (%)</label>
-      <input class="inp emp-field" data-idx="${idx}" data-k="taux" placeholder="Ex : 1.2" value="${e.taux||""}" type="number" min="0" step="0.01" style="width:100%">
-    </div>
-    <div>
-      <label style="font-size:10px;color:rgba(255,255,255,0.5);display:block;margin-bottom:3px">Nb échéances</label>
-      <input class="inp emp-field" data-idx="${idx}" data-k="nbEch" placeholder="Ex : 60" value="${e.nbEch||""}" type="number" min="1" style="width:100%">
-    </div>
-    <div>
-      <label style="font-size:10px;color:rgba(255,255,255,0.5);display:block;margin-bottom:3px">1ère échéance (MM/AAAA)</label>
-      <input class="inp emp-field" data-idx="${idx}" data-k="dateDebut" placeholder="Ex : 01/2022" value="${e.dateDebut||""}" style="width:100%">
-    </div>
-    <div>
-      <label style="font-size:10px;color:rgba(255,255,255,0.5);display:block;margin-bottom:3px">Fréquence</label>
-      <select class="inp emp-field" data-idx="${idx}" data-k="freq" style="width:100%">
-        <option value="mensuel" ${(e.freq||"mensuel")==="mensuel"?"selected":""}>Mensuel</option>
-        <option value="trimestriel" ${e.freq==="trimestriel"?"selected":""}>Trimestriel</option>
-        <option value="semestriel" ${e.freq==="semestriel"?"selected":""}>Semestriel</option>
-        <option value="annuel" ${e.freq==="annuel"?"selected":""}>Annuel</option>
-      </select>
-    </div>
-  </div>
-</div>`;
+      return`<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(0,194,203,0.2);border-radius:8px;padding:12px;margin-bottom:8px">
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:8px;align-items:end">
+          <div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:4px">Nom du leasing</div>
+            <input class="inp emp-field" data-idx="${idx}" data-field="nom" value="${e.nom||""}" placeholder="Ex: Crédit-bail Médilease" style="width:100%">
+          </div>
+          <div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:4px">Loyer mensuel HT</div>
+            <input class="inp emp-field" data-idx="${idx}" data-field="loyer" value="${e.loyer||""}" placeholder="Ex: 409" type="number" style="width:100%">
+          </div>
+          <div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:4px">Nb loyers restants</div>
+            <input class="inp emp-field" data-idx="${idx}" data-field="nbRestants" value="${e.nbRestants||""}" placeholder="Ex: 31" type="number" style="width:100%">
+          </div>
+          <div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:4px">CRD saisi (optionnel)</div>
+            <input class="inp emp-field" data-idx="${idx}" data-field="crdSaisi" value="${e.crdSaisi||""}" placeholder="Si connu exactement" type="number" style="width:100%">
+          </div>
+          <div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:4px">Date fin</div>
+            <input class="inp emp-field" data-idx="${idx}" data-field="dateFin" value="${e.dateFin||""}" placeholder="MM/AAAA" style="width:100%">
+          </div>
+          <button type="button" class="btn-del-emp" data-idx="${idx}" style="background:transparent;border:1px solid rgba(255,100,100,0.3);color:#f87171;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px;align-self:end">✕</button>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:#00C2CB">
+          CRD estimé : <strong>${crdDisplay}</strong>
+          ${e.loyer&&e.nbRestants?"<span style='color:rgba(255,255,255,0.4);font-size:10px'> ("+e.loyer+"€ × "+e.nbRestants+" loyers)</span>":""}
+        </div>
+      </div>`;
     }
 
     function refreshContainer(){
@@ -5324,7 +5512,7 @@ function bindEvents(){
 
     const btnAdd=document.getElementById("btn-add-emprunt");
     if(btnAdd)btnAdd.addEventListener("click",()=>{
-      ST.answers.emprunts.push({nom:"",type:"emprunt",montant:"",taux:"",nbEch:"",dateDebut:"",freq:"mensuel",crdCalcule:null});
+      ST.answers.emprunts.push({nom:"",loyer:"",nbRestants:"",crdSaisi:"",dateFin:"",crdCalcule:null});
       refreshContainer();
     });
 
