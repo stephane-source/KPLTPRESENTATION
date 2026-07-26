@@ -316,8 +316,8 @@ Par ordre de priorité (selon Steph) :
 5. Banque connaissances sectorielles (Interfimo/UNSAF/FSPF drag&drop)
 
 **Sécurité différée** :
-- **Risque assumé** : API key Anthropic actuellement hardcodée dans index.html public (ligne ~715). Fix prévu : révocation + AES-GCM + Firestore. **Ne pas commencer sans signal explicite de Steph.**
-- **Risque assumé** : clé Pappers hardcodée ligne 984 — fix prévu post-deadline via proxy Vercel Edge Function.
+- **TODO (reporté, sur demande explicite de Steph uniquement — PAS maintenant)** : la clé API Anthropic est hardcodée dans index.html public (ligne ~1261). Elle a été **allowlistée dans GitHub Push Protection le 26/07** pour débloquer le flux Git → elle est désormais **en clair dans le repo GitHub** (en plus de l'app déployée). **Traitement prévu** : révoquer la clé exposée → nouvelle clé en **variable d'env Vercel** consommée par le proxy `api/` (sort d'index.html). **Ne pas lancer sans signal explicite de Steph.**
+- **Risque assumé** : clé Pappers hardcodée ligne ~984 — fix prévu post-deadline via proxy Vercel Edge Function.
 
 ---
 
@@ -327,7 +327,7 @@ Par ordre de priorité (selon Steph) :
 - **Ne pas** revenir à `DSO conso = moyenne arithmétique` (incohérent en présence de SAS interco)
 - **Ne pas** utiliser `gfk(co.cXXX||0)` sans vérifier que `cXXX` est dans le `return` de `calcConso`
 - **Ne pas** appeler `R.slide(body, footer)` (2 args) — c'est `R.slide(header, body, footer, isCover?)` (4 args)
-- **Ne pas** push GitHub (rejected par Vercel à cause de l'API key hardcodée). Toujours `vercel --prod` direct.
+- **Flux de déploiement (règle actée 26/07)** : `commit → push origin master → déploiement Git auto`. **Plus jamais de `vercel --prod` sur worktree modifié** (source:cli + gitDirty = travail non versionné). Le blocage push (API key) est levé (secret allowlisté). Chaque lot = commit propre + build-id stampé.
 - **Ne pas** modifier l'ordre des heuristiques de détection SAS dans `calcConso` (cassé d'autres dossiers)
 - **Ne pas** assumer que `dpoIC <= 365` (cap toujours nécessaire pour les flux interco massifs)
 
