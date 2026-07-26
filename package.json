@@ -1,0 +1,10 @@
+{
+  "name": "kplt-presentation",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "pako": "^2.1.0",
+    "resend": "^4.8.0"
+  }
+}

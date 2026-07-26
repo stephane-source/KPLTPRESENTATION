@@ -1,0 +1,43 @@
+.vercel
+.env*.local
+node_modules/
+# Secrets — ne jamais committer
+sk-ant-*.txt
+BROWSERLESS_KEY.txt
+# Backups manuels
+index_BACKUP_*.html
+index.backup-*.html
+# Harnesses & fichiers de validation (lisent des données client en place)
+_kplt_check.js
+_silae_harness.cjs
+_silae_integration.cjs
+_fec_analyze.cjs
+_verify_all.cjs
+_anti_regression.cjs
+_periode_harness.cjs
+_scopecheck.js
+_modal_test.cjs
+*.png
+_focus_test.cjs
+_mc_guard_test.cjs
+_sas_site_test.cjs
+_pnl_n1n2_test.cjs
+_pnl_render.cjs
+_mc_etab_test.cjs
+_dossier_persist_test.cjs
+_sas_render.cjs
+_integrite_test.cjs
+_tags_net_test.cjs
+_stamp_build.cjs
+_build_stamp_test.cjs
+_interco_match_test.cjs
+_p16_test.cjs
+_m.cjs
+# Dev artifacts (single-file app — extraits/refs non déployés)
+.claude/
+_logo_b64.txt
+_teaser_module.js
+_tft_module.js
+ref/
+vercel
+_kplt_analytics_tmp/

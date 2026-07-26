@@ -1,0 +1,36 @@
+.git
+node_modules
+# Secrets — ne jamais servir en statique
+sk-ant-*.txt
+BROWSERLESS_KEY.txt
+.env*.local
+# Backups manuels (ne pas exposer publiquement)
+index_BACKUP_*.html
+index.backup-*.html
+# Harnesses / validation (référencent des chemins client)
+_kplt_check.js
+_silae_harness.cjs
+_silae_integration.cjs
+_fec_analyze.cjs
+_verify_all.cjs
+_anti_regression.cjs
+_periode_harness.cjs
+_scopecheck.js
+_logo_b64.txt
+_modal_test.cjs
+*.png
+_focus_test.cjs
+_mc_guard_test.cjs
+_sas_site_test.cjs
+_pnl_n1n2_test.cjs
+_pnl_render.cjs
+_mc_etab_test.cjs
+_dossier_persist_test.cjs
+_sas_render.cjs
+_integrite_test.cjs
+_tags_net_test.cjs
+_stamp_build.cjs
+_build_stamp_test.cjs
+_interco_match_test.cjs
+_p16_test.cjs
+_m.cjs
