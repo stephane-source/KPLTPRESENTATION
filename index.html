@@ -96,7 +96,12 @@ textarea.inp{min-height:80px;resize:vertical}
 <!-- ════ Firebase SDK (compat mode v10.14) — Loader dynamique avec fallback CDN ════ -->
 <script>
 // ★ BUILD MARKER — vérif F12 que le live est à jour (window.KPLT_BUILD). Mis à jour à chaque déploiement.
-window.KPLT_BUILD = "2026-07-24 SYNC kplt-analytics (58a8ddd + 07cd35f) — 5 tâches, 5/5 critères OK (harness dossier SITBEN) : (1) SILAE parseur : mandataires 'sans heures' (brut=0, ch.pat/suppl≠0) CONSERVÉS, col O suppléments parsée, rejet UNIQUEMENT lignes vraiment vides, contrôle cohérence coût=brut+ch.pat+suppl en warning visible, log [SILAE-PARSE] → CMDPC 1 087 061€ (fini le 1 030 261) ; (2) doctrine MS 2 ratios distincts : « MS chargée/CA » = 100% FEC 64x+631 (asso+SAS toujours FEC, identique toutes slides) vs « Coût employeur (SILAE)/CA » (paie chargée, détail par tête) — mention fausse 'taxe salaires déjà incluse dans SILAE' SUPPRIMÉE ; (3) consommables 602x NET des avoirs (débit−crédit, fini l'abs par compte → PC 166 443 au lieu de 191 866) + composition loggée + colonne QP SAS = charges de site SAS ventilées (direct par libellé + mixte 612203 prorata CA, hypothèse, HORS ratio conso) + warning variation de stock estimée (603 rond OD 'STOCK 2024') ; (4) contrôle symétrie interco P&L : Σ706/7061 SAS = Σ604 assos (429 253 OK au 31/05), détecte extourne 604 postérieure + signale artefact prix de transfert (EBITDA entité non fiables) ; (5) anti-divergence : en-tête provenance parseur + KOPILOT_CORE_SYNC.md. | 2026-07-23T20:00Z — LOT 13 (2 bugs bloquants) : BUG A crash '_normLabelBase is not defined' → libellé EBITDA Normatif = SSOT co.periode.normLabel (const locale inter-fonctions supprimée) + sweep anti-récidive OK ; BUG B état des coches Retraitements avancés persisté (ST.retraitState={charges,produits}, clé stable entId|Journal##Ecriture, défaut par confiance à la 1re apparition, total/badge/collect lus depuis le STATE, localStorage kplt_retrait_{siren}, bouton Réinitialiser). Coches conservées au changement d'onglet + réouverture. | 2026-07-23 LOT 12 (3 correctifs) : (a) jauges Consommables/CA (KPIs + Ratios) consomment co.cConsoRatio (dénominateur CA_retraité) → 12,7% attendu ; (b) EBITDA Normatif symétrique = EBITDAR + rém.dir + charges N-1 cochées − produits N-1 flagués (60 032 attendu SQ), 'Full Year' renommé 'EBITDA Normatif (base N mois)' + cascade item '− Produits exercice antérieur N-1' ; (c) kpltReapplySilaeBornage() re-borne les SILAE stockés (LOT 6) à la génération depuis _rawRows, sans re-upload. | 2026-07-23 LOT 11 CHARGES ANTÉRIEURES COMPLÉTUDE : seuil PAR ÉCRITURE (regroupement JournalCode+EcritureNum, toutes lignes 6x stockées, seuil 500€ au TOTAL du groupe, coche = écriture entière, lignes indentées + sous-total) ; flag manuel charges (recherche montant/libellé/compte/fournisseur, section 'Ajouter une charge') ; candidats muets (factures début exercice jour 01-10, journal achats, sans token, décochés par défaut, badge faible) ; total/EBITDA retraité = mêmes consommateurs (buildSFocusExercicesAnterieurs). Garde-fou LOT 5 conservé. | 2026-07-23 LOT 10 SILAE MULTI-ENTITÉS : gate 'asso only' levé (productivité agrège TOUS les SILAE chargés asso+SAS, dédup nom+brut anti fichier-partagé, praticiens filtrés par EMPLOI, SAS affichée si SILAE praticiens) + quality check PAR ENTITÉ (|Σ SILAE coût − FEC 64x hors dir| tol 10% ; OD paie manquantes / export SILAE manquant) ; MS/CA headline doctrine inchangé. | 2026-07-22 CHANTIER GLOBAL LOTS 1-9 : (1) Subventions 74x isolées sous le CA du P&L (EBITDA inchangé, déjà bottom-up) ; (2) SSOT co.periode (label 'Situation intermédiaire — N mois au JJ/MM/AAAA', facteurAnnu, multLabel) câblé cover/ExecSum/Consolidation/teaser/cession, multiples ×EBITDA ANNUALISÉ (n.s. si ≤0), mois de CA base période ; (3) sous-lignes 60x pilotées par TAGS (fallback préfixe) + [INTERCO-SRC] diag ; (4) CA_retraité (produits exercice antérieur : auto PieceDate<exo + flag manuel modale classe 7) → tous ratios /CA (conso/MS/EBITDA/DSO) sur CA_retraité + tag interco_conso ; (5) retraitements : FACT|FACTURE retiré + garde-fou PieceDate=exo ; (6) SILAE 2 moteurs : exclusion sous-totaux + bornage période FEC + [SILAE-PERIOD] + alerte quality ; (7) productivité CA/prat & CA/ETP annualisés sur CA_retraité, mensuel /nbMoisEff, MS/CA doctrine unique ; (8) garde-fou leasing CRD/redevances >8 ans ; (9) slide productivité AUDIT : colonnes CA généré saisi + ratio brut/CA (couleur légende) + CA non affecté + validation Σ>CA_retraité (bloquante saisie + quality checker), gate confidentialité teaser/cession. Anti-reg 77/77 (hors 2 OCR pré-existants).";
+window.KPLT_BUILD = "2026-07-26i P1-7 + P1-8 : (7) slide Charges — TOTAL toujours visible : au-dela de 11 postes, les petits regroupes en Autres postes (N) pour que Autres charges et la ligne TOTAL ne sortent jamais de la slide (Somme postes = total garantie). (8) ALIAS COURTS d entites (kpltAssignAliases : override answers.entAlias ou sigle auto des mots distinctifs, dedup ; kpltEntShort = alias si nom > maxLen) — applique aux en-tetes/lignes de la matrice interco (fini PC/MA identiques tronques). Helper dispo pour les autres slides. Harness P1-8 OK (S/PC/MA distincts, override respecte). | 2026-07-26h P1-6 REM. DIRIGEANT TRANSVERSE CDR : les honoraires de gestion/mandat du dirigeant (societe tierce, ex. mandat ERAM 70 500 en 604, libelle mandat/presidence/gerance detecte au niveau ecriture) sortent des consommables/interco/frais generaux vers une categorie PROPRE Remuneration dirigeant (ligne dediee cascade + barre N1 violette). MS = Personnel seul. Marge brute SITBEN recalculee 100% (SAS de gestion, pas de COGS ; fini le 84,1% fausse). EBITDA inchange (SSOT). Harness P1-6 OK + reconciliation N1/N2 intacte. | 2026-07-26g SOMMAIRE DYNAMIQUE : sommaire genere depuis les slides REELLEMENT presentes — Synthese Interco Groupe (s_interco) et Analytique SAS par site (s_sas_site) explicitement listes + appendice Autres analyses pour toute slide presente non listee (titre extrait de len-tete R.hdr). Plus aucune slide absente du sommaire. Clot le lot P0 (1 reconciliation, 2 SAS, 3 %CA unique, 4 conso net, 5 matrice interco) + build ID. | 2026-07-26f P0-5 MATRICE INTERCO PEUPLÉE : matchEntity (auxiliaire CompAuxLib ↔ entité) refait par MOTS-CLÉS DISTINCTIFS + SIGLE + alias, jamais par ressemblance du nom complet (« CENTRE MEDICO DENTAIRE DE… » ne matchait rien → matrice vide). Harness 8/8 : SITBEN CONSULTING→SITBEN, CMDPC→CMDPC (sigle), CMD PONTAULT COMBAULT→CMDPC, MAISON ALFORT→CMDMA, externes (SO CLINIC/LIXXBAIL)→null. Ligne « interco non ventilé » si flux flaggé interco non rattachable (aucun matching flou). | 2026-07-26e BUILD ID : identifiant de version (SHA7 du contenu + date) injecté au déploiement (_stamp_build.cjs), affiché footer app (coin bas-droit, non imprimé) + pied de page PDF (« KPLT · <sha>·<date> »). Traçabilité : tout audit sait quelle version du code a produit les chiffres. Harness vérifie l injection + cohérence du SHA. | 2026-07-26d P0-3 DÉNOMINATEUR % UNIQUE : slide Charges passe de « % Produits » (63,4% MS) à « % CA » (67,9% MS) — même dénominateur que le CDR et Top Charges. Param cabinet answers.denominateurPct (défaut CA, bascule Produits dispo). Colonne secondaire « % charges » (part du total, somme 100%). Subventions restent en ligne dédiée sous le CA. | 2026-07-26c P0-4 PÉRIMÈTRE CONSO NET UNIQUE : computeTagsCharges (moteur des slides tags + Top Charges) somme désormais le solde NET (débit−crédit) au lieu de Math.abs par compte → consommables PC 166 442 partout (fini le 191 866 brut), cohérent avec la slide Ratios. Composition loguée [TAGS-CONSO-NET]. Prompt IA conso602 aussi net. Harness : tag consommables = 166 442 net (extraction du vrai moteur sur comptes réels PC). | 2026-07-26b P0-1 INTÉGRITÉ CDR↔BILAN : bilan SÉPARE désormais « Report à nouveau & résultat en instance d affectation » (11x + 12x d À-Nouveaux) et « Résultat de la période » (Σ7x−Σ6x) — fini la fusion des 120/129 d AN avec le résultat de période (source des écarts −9 501/+3 713/+2 156). Contrôle d intégrité 2 étages affiché sur le CDR : (a) FEC équilibré Σdébits=Σcrédits, (b) RN CDR = résultat de la période au centime. Blocage : DUR si (b) échoue (bug mapping) ; SOFT + « générer en connaissance de cause » si (a) échoue (FEC déséquilibré) avec override persisté. Ligne « [Non classé] » pour tout compte 6x/7x non mappé. Harness au centime sur 3 FEC réels : équilibre 12 223 429.60/9 979 164.07/6 834 583.56, résultat période −90 513.76/+131 343.20/+19 654.30, en instance −9 501.10/+3 713.37/+2 156.07. | 2026-07-26 P0-2 ANALYTIQUE SAS — directes réparées : matching par MOTS-CLÉS DE SITE (tokens distinctifs du nom + sigle auto + override answers.multicentres.siteKeywords, match .some()) au lieu du nom complet (.every() échouait sur « CENTRE MEDICO DENTAIRE DE… »). Directes PC 32 998 / MA 91 808 (fini le 0 €), mixte 48 925, communes 239 787 (dont rém. dirigeant 70 500 détectée via libellés d écriture 604 mandat), coût réel PC 192 830 / MA 220 688, écarts +86 423 / (70 688) Σ=15 735 marge SAS, EBITDA économique par centre (comptable ± écart, total groupe inchangé). Alias courts (PC/MA, sigle auto) sur la slide. Harness C4 14/14 + rendu vérifié. | 2026-07-25e MULTI-CENTRES SUITE : (1) NOUVEAU mode « 1 entité = 1 centre » (groupe multi-FEC) au questionnaire — chaque FEC exploitant = 1 centre à 100% (CA/charges/SILAE auto, aucune classif manuelle), seule la SAS ventilée ; défaut intelligent (plusieurs exploitants + SAS → mode groupe) ; kpltValidateMulticentres branche groupe (CA entité non nul → valide, plus d'impasse). (2) FIN DE L'IMPASSE : la modale « Génération bloquée » a un BOUTON D'ACTION par motif (Configurer centres/mots-clés, Affecter salariés, Revoir classification, Choisir clé) qui ouvre l'écran concerné (classification modale OU questionnaire) + retry ; « J'ai compris » seul supprimé ; motifs structurés {code,label,text}. (3) BUG %commun : borné 0-100, dénominateur = charges totales entité, libellé exact (fini « Plus de 100% »). (4) Analytique SAS = TOTAL charges 6x (communs 239 787, total 413 518 vs 429 253 facturés — harness). (5) mode+clés persistés par dossier. Harnesses : guard A+mode B 15/15, C4 full charges OK. | 2026-07-25d D PERSISTANCE DOSSIER : config unifiée kplt_dossier_{clé} — persiste TOUTES les décisions par dossier (mappings multi-centres overrides+établissement→centre, mapping N1/N2, fournisseurs dirigeant cochés, clés répartition, bascule 631) en plus des tags/retraitements existants. Pré-remplies à la génération suivante (load non destructif, session prime). Recharger un FEC plus long (5→7 mois) N'EFFACE RIEN : règles ré-appliquées, seuls les comptes/fournisseurs/établissements INÉDITS marqués « NOUVEAU » (badge modale). Export / import JSON de toute la config dossier (boutons modale classification). Harness : save→load restaure 6/6 décisions, détection nouveau OK (anciens non flaggés), import round-trip OK. BATCH COMPLET (A,B,C1-3,C4,C5,D,E,F). | 2026-07-25c B REFONTE MODALE CLASSIFICATION : (B1) légende statuts + pastilles couleur + NOMS réels des centres (Auto / <Centre> / Commun / Interco). (B2) tableau comptes : colonnes « FEC source » + « Règle appliquée » (Manuel / Mot-clé libellé / Suffixe / Défaut Commun / Interco). (B3) SILAE ÉDITABLE : affectation en masse par ÉTABLISSEMENT → centre, mapping établissement→centre PERSISTÉ par dossier (answers.multicentres.mappingEtabSilae), priorité sur l'auto — fini « 0 sal → c1 » sans moyen d'agir (harness : 3 sal sansCentre → 0 après mapping). (B4) compteurs live sans re-render destructeur (scroll préservé). (B5) fausse anomalie « 64x global ventilé via SILAE » SUPPRIMÉE — seule vraie anomalie = salariés non affectés (message actionnable). | 2026-07-25b C1-C3 REFONTE CDR N1/N2 (sync kplt-analytics 09b56e8) : toutes les pages P&L reconstruites sur le MAPPING COMPTES N1/N2 (taxonomie universelle KPLT_DEFAULT_MAPPING + override dossier answers.mappingComptesN1N2 + pack sectoriel getSectorConfig().planN2 ; plus jamais de préfixes bruts). Cascade Transaction Services : Produits d'exploitation (détail N2 CA par activité + subv) → Consommables (N2) → = MARGE BRUTE → Interco (ligne à part) → Frais généraux (top N2 + autres) → Masse salariale (mémo dont rém. dir.) → Impôts & taxes → = EBITDA → + crédit-bail = EBITDAR (mémo) → DAP/financier/exceptionnel/IS → = RÉSULTAT NET. Style TS : négatifs entre parenthèses en neutre, rouge réservé au déficit, séparateurs milliers, sous-totaux gras + filet, %CA systématique, barres horizontales par bloc N1 triées décroissantes (remplace le camembert). 627 frais bancaires → opérationnel (cohérent SSOT). Harness réconciliation 3/3 entités : CA exact, marge brute = produits−conso, EBITDA reconstruit = bottom-up à l'arrondi près, foote à l'EBITDA SSOT, zéro compte non classé. Rendu 16:9 vérifié. Legacy conservé en fallback. | 2026-07-25 C4+C5 : (C4) nouvelle slide « Analytique SAS de gestion par site » — ventile les charges opérationnelles de la SAS via les intitulés FEC (générique) en 4 blocs (directes A/B, mixtes site multi-centres par clé, communes overhead par clé, hors DAP/financier) + rapprochement facturation interco 604 par centre → écart de marge par site. Harness calage OK : directes PC 32 998 / MA 91 808, mixte 48 925, communes 172 479, facturé 279 253 / 150 000, écart PC +123 689 vs MA −40 646 (prix de transfert asymétrique). (C5) liste « fournisseurs dirigeant à neutraliser » : entités du groupe/interco (SAS de gestion) rendues NON cochables + badge « interco groupe — déjà éliminé » (évite le double retraitement avec l'élimination interco), filtre défensif au collect. | 2026-07-24d GARDE-FOUS MULTI-CENTRES (batch A) : kpltValidateMulticentres — module actif UNIQUEMENT si ≥2 centres nommés (A1) ; génération BLOQUÉE (dialogue + motifs) si CA affecté=0 OU 0 salarié SILAE rattaché OU >50% charges en Commun non validé (A2) ; ventilation invalide → slides « par centre » OMISES + page unique « ventilation non configurée », jamais de 0€/—% (A3) ; clé prorata CA sur CA nul → flag + clé explicite exigée, plus de 50/50 silencieux (A4). Testé 9/9 (logique guardrail). E/F déjà livrés (2026-07-24b/c). | 2026-07-24c UI saisie SIREN/SIRET : fini la perte de focus à chaque frappe. (1) handler siren-inp = MAJ du state uniquement, plus de render() pendant la frappe → lookup Pappers en debounce 350ms/Enter/blur ; (2) filet GÉNÉRIQUE _kpltCaptureFocus/_kpltRestoreFocus dans render() : mémorise champ actif (sélecteur classe+data-* ou #id) + selectionStart AVANT re-render, restaure focus + setSelectionRange APRÈS → couvre TOUS les champs (siren, ca-prat, etc.) et le re-render async de fetchPappers. Test headless : 9 chiffres tapés au clavier sans souris → focus+curseur conservés (même pire cas render/frappe), correction milieu OK, Tab OK. | 2026-07-24b UI modale Retraitements avancés : barre d'onglets STICKY (flex-shrink:0, hors scroll) + onglets larges 44px libellé complet + badge d'état ✓ visité/● en attente, wrap générique N onglets, contenu seul scrollable (min-height:0 → fini le débordement 139 fournisseurs qui poussait la nav hors écran), footer sticky, boutons ← précédent/suivant → par onglet, lien « → y aller » vers 1er onglet en attente. | 2026-07-24 SYNC kplt-analytics (58a8ddd + 07cd35f) — 5 tâches, 5/5 critères OK (harness dossier SITBEN) : (1) SILAE parseur : mandataires 'sans heures' (brut=0, ch.pat/suppl≠0) CONSERVÉS, col O suppléments parsée, rejet UNIQUEMENT lignes vraiment vides, contrôle cohérence coût=brut+ch.pat+suppl en warning visible, log [SILAE-PARSE] → CMDPC 1 087 061€ (fini le 1 030 261) ; (2) doctrine MS 2 ratios distincts : « MS chargée/CA » = 100% FEC 64x+631 (asso+SAS toujours FEC, identique toutes slides) vs « Coût employeur (SILAE)/CA » (paie chargée, détail par tête) — mention fausse 'taxe salaires déjà incluse dans SILAE' SUPPRIMÉE ; (3) consommables 602x NET des avoirs (débit−crédit, fini l'abs par compte → PC 166 443 au lieu de 191 866) + composition loggée + colonne QP SAS = charges de site SAS ventilées (direct par libellé + mixte 612203 prorata CA, hypothèse, HORS ratio conso) + warning variation de stock estimée (603 rond OD 'STOCK 2024') ; (4) contrôle symétrie interco P&L : Σ706/7061 SAS = Σ604 assos (429 253 OK au 31/05), détecte extourne 604 postérieure + signale artefact prix de transfert (EBITDA entité non fiables) ; (5) anti-divergence : en-tête provenance parseur + KOPILOT_CORE_SYNC.md. | 2026-07-23T20:00Z — LOT 13 (2 bugs bloquants) : BUG A crash '_normLabelBase is not defined' → libellé EBITDA Normatif = SSOT co.periode.normLabel (const locale inter-fonctions supprimée) + sweep anti-récidive OK ; BUG B état des coches Retraitements avancés persisté (ST.retraitState={charges,produits}, clé stable entId|Journal##Ecriture, défaut par confiance à la 1re apparition, total/badge/collect lus depuis le STATE, localStorage kplt_retrait_{siren}, bouton Réinitialiser). Coches conservées au changement d'onglet + réouverture. | 2026-07-23 LOT 12 (3 correctifs) : (a) jauges Consommables/CA (KPIs + Ratios) consomment co.cConsoRatio (dénominateur CA_retraité) → 12,7% attendu ; (b) EBITDA Normatif symétrique = EBITDAR + rém.dir + charges N-1 cochées − produits N-1 flagués (60 032 attendu SQ), 'Full Year' renommé 'EBITDA Normatif (base N mois)' + cascade item '− Produits exercice antérieur N-1' ; (c) kpltReapplySilaeBornage() re-borne les SILAE stockés (LOT 6) à la génération depuis _rawRows, sans re-upload. | 2026-07-23 LOT 11 CHARGES ANTÉRIEURES COMPLÉTUDE : seuil PAR ÉCRITURE (regroupement JournalCode+EcritureNum, toutes lignes 6x stockées, seuil 500€ au TOTAL du groupe, coche = écriture entière, lignes indentées + sous-total) ; flag manuel charges (recherche montant/libellé/compte/fournisseur, section 'Ajouter une charge') ; candidats muets (factures début exercice jour 01-10, journal achats, sans token, décochés par défaut, badge faible) ; total/EBITDA retraité = mêmes consommateurs (buildSFocusExercicesAnterieurs). Garde-fou LOT 5 conservé. | 2026-07-23 LOT 10 SILAE MULTI-ENTITÉS : gate 'asso only' levé (productivité agrège TOUS les SILAE chargés asso+SAS, dédup nom+brut anti fichier-partagé, praticiens filtrés par EMPLOI, SAS affichée si SILAE praticiens) + quality check PAR ENTITÉ (|Σ SILAE coût − FEC 64x hors dir| tol 10% ; OD paie manquantes / export SILAE manquant) ; MS/CA headline doctrine inchangé. | 2026-07-22 CHANTIER GLOBAL LOTS 1-9 : (1) Subventions 74x isolées sous le CA du P&L (EBITDA inchangé, déjà bottom-up) ; (2) SSOT co.periode (label 'Situation intermédiaire — N mois au JJ/MM/AAAA', facteurAnnu, multLabel) câblé cover/ExecSum/Consolidation/teaser/cession, multiples ×EBITDA ANNUALISÉ (n.s. si ≤0), mois de CA base période ; (3) sous-lignes 60x pilotées par TAGS (fallback préfixe) + [INTERCO-SRC] diag ; (4) CA_retraité (produits exercice antérieur : auto PieceDate<exo + flag manuel modale classe 7) → tous ratios /CA (conso/MS/EBITDA/DSO) sur CA_retraité + tag interco_conso ; (5) retraitements : FACT|FACTURE retiré + garde-fou PieceDate=exo ; (6) SILAE 2 moteurs : exclusion sous-totaux + bornage période FEC + [SILAE-PERIOD] + alerte quality ; (7) productivité CA/prat & CA/ETP annualisés sur CA_retraité, mensuel /nbMoisEff, MS/CA doctrine unique ; (8) garde-fou leasing CRD/redevances >8 ans ; (9) slide productivité AUDIT : colonnes CA généré saisi + ratio brut/CA (couleur légende) + CA non affecté + validation Σ>CA_retraité (bloquante saisie + quality checker), gate confidentialité teaser/cession. Anti-reg 77/77 (hors 2 OCR pré-existants).";
+// ★ BUILD ID 26/07 — identifiant de version injecté au déploiement (SHA court du contenu + date).
+//   Affiché footer app + pied de page PDF. Traçabilité : tout audit sait quel code a produit les chiffres.
+window.KPLT_BUILD_ID = "82509af·2026-07-26"; // stampé par _stamp_build.cjs avant chaque deploy
+// Footer app discret (coin bas-droit) affichant le build id — non imprimé (print:none).
+try{ window.addEventListener("DOMContentLoaded",function(){ try{ var b=window.KPLT_BUILD_ID; if(b && b.indexOf("__")<0){ var el=document.createElement("div"); el.id="kplt-build-footer"; el.textContent="KPLT · "+b; el.style.cssText="position:fixed;bottom:4px;right:8px;font:10px Montserrat,Arial,sans-serif;color:rgba(120,130,160,0.55);z-index:9998;pointer-events:none"; var st=document.createElement("style"); st.textContent="@media print{#kplt-build-footer{display:none}}"; document.head.appendChild(st); document.body.appendChild(el); } }catch(e){} }); }catch(e){}
 (function(){
   const FIREBASE_VERSION = "10.14.1";
   const FIREBASE_MODULES = ["firebase-app-compat", "firebase-auth-compat", "firebase-firestore-compat", "firebase-storage-compat"];
@@ -429,12 +434,13 @@ function kpltHydrateAnswersFromSnapshot(snapshot, opts){
   merged.multicentres = {
     active:false, entId:"", centres:[], strategieCommun:"prorataCA",
     regexPraticiens:"(chirurgien|dentiste|médecin|orthodonti|pédiatre|kiné|stomato|implanto|endodont|pédodont|orthoptist|orthophoniste|audioprothesiste|podologue)",
-    overridesComptes:{},
+    overridesComptes:{}, mappingEtabSilae:{}, // ★ B3 : mapping établissement SILAE → centre (persisté)
     ...(before.multicentres || {}),
     ...(snapshot.multicentres || {})
   };
   if(!Array.isArray(merged.multicentres.centres)) merged.multicentres.centres = [];
   if(!merged.multicentres.overridesComptes || typeof merged.multicentres.overridesComptes !== "object") merged.multicentres.overridesComptes = {};
+  if(!merged.multicentres.mappingEtabSilae || typeof merged.multicentres.mappingEtabSilae !== "object") merged.multicentres.mappingEtabSilae = {};
 
   // ★ Migration silencieuse Patch F1 : 'interco_tag' → 'interco' dans overrides
   const ov = merged.tagsCharges.overrides || {};
@@ -2364,6 +2370,9 @@ function parseFEC(text){
   const jnlCodes={}; // track unique journal codes for debugging
   let _anSkipped=null; // ★ Safety net: track AN-skipped class 6/7 amounts
   let _rawCharges6=0, _rawProduits7=0; // ★ Raw totals for cross-check
+  // ★ P0-1 26/07 : équilibre FEC (Σ débits = Σ crédits, TOUTES lignes) + résultat 12x issu des À-NOUVEAUX
+  //   (120/129 = résultat N-1 en instance d'affectation) — à NE JAMAIS fusionner avec le résultat de la période.
+  let _totD=0, _totC=0, _res12xAN=0;
 
   for(let i=1;i<lines.length;i++){
     const f=lines[i].split(sep).map(v=>v.trim().replace(/^"|"$/g,""));
@@ -2390,6 +2399,9 @@ function parseFEC(text){
     // Journal AN = écritures d'ouverture → bilan uniquement, PAS CR
     const jnlUp=jnl.toUpperCase();
     const isAN=jnlUp==="AN"||jnlUp==="RAN"||jnlUp==="A-NOU"||jnlUp==="ANO"||jnlUp==="ANOUV"||jnlUp==="OUV"||jnlUp==="00"||jnlUp==="000"||jnlUp==="AAO"||jnlUp==="A-NOUVEAU"||jnlUp==="ANOUVEAU"||jnlUp==="OUVERTURE"||jnlUp.startsWith("A-N")||jnlUp.startsWith("RAN")||jnlUp==="ANOUVE";
+      // ★ P0-1 : Σ débits/crédits sur TOUTES les lignes (équilibre) + 12x d'À-Nouveaux (résultat en instance).
+      _totD+=d; _totC+=c;
+      if(isAN && cpt.startsWith('12')) _res12xAN += (c-d);
 
       // Skip AN entries for CR accounts (class 6/7) — they pollute cumulated amounts
       if(isAN && (cpt.startsWith('6') || cpt.startsWith('7'))){
@@ -2833,6 +2845,15 @@ function parseFEC(text){
 
   const rnBilan = rnB_final;
   const rnEcart = Math.abs(rnB) > 1 ? Math.abs(RN_exact-rnB_final)/Math.max(1,Math.abs(rnB_final)) : 0;
+  // ★ P0-1 26/07 — SÉPARATION : « Résultat de la période » (Σ7x−Σ6x = RN_exact) vs « Report à nouveau &
+  //   résultat en instance d'affectation » (11x + 12x issus des À-Nouveaux). Ne JAMAIS fusionner.
+  const resultatPeriode = Math.round(RN_exact*100)/100;
+  const resultatEnInstance = Math.round(_res12xAN*100)/100;           // 12x d'À-Nouveaux (résultat N-1 en instance)
+  const reportEtInstance = Math.round((rAnB + resultatEnInstance)*100)/100;
+  // Équilibre FEC (Σ débits = Σ crédits, toutes lignes) — contrôle d'intégrité étage (a).
+  const fecEcartEquilibre = Math.round((_totD - _totC)*100)/100;
+  const fecEquilibre = Math.abs(fecEcartEquilibre) < 0.01;
+  console.log("[FEC-INTEGRITE] Σdébits="+Math.round(_totD)+" Σcrédits="+Math.round(_totC)+" écart="+fecEcartEquilibre+(fecEquilibre?" ✓ équilibré":" ✗ DÉSÉQUILIBRÉ")+" | résultat période="+resultatPeriode+" | résultat en instance (12x AN)="+resultatEnInstance);
 
   // Équilibre financier — FRNG utilise cpTot (cohérent avec bilan équilibré)
   // FRNG = Ressources stables - Emplois stables = (CP + provB + dettesFinB) - actiImmoNet
@@ -2967,7 +2988,7 @@ function parseFEC(text){
     ms,msAvecTaxes,dotAmort,remDir644,remDir646,taxesRH, // rém. dirigeant (644x salaire + 646x cotisations) + taxes RH (63x sauf CVAE/CFE)
     autresProd,subv74,autresChg,prodFin,chgFin,prodExcep,chgExcep,IS, // ★ LOT 1 : subv74 (74x) exposé pour la ligne P&L dédiée
     MB,EBE,EBITDA,EBIT,REX,RN:RN_exact,CAF,
-    rnBilan:rnB_final,rnEcart,DSO,DPO,creancesCliNettes,cli411Net,
+    rnBilan:rnB_final,rnEcart,resultatPeriode,resultatEnInstance,reportEtInstance,fecEquilibre,fecEcartEquilibre,totDebit:Math.round(_totD*100)/100,totCredit:Math.round(_totC*100)/100,DSO,DPO,creancesCliNettes,cli411Net,
     fluxAchatsTotal, // achats+chargesExt — dénominateur DPO
     // Bilan actif
     imoIncorpB,imoCorpB,imoFinB,imoAmortB,actiImmoNet,
@@ -4105,8 +4126,8 @@ function buildBilanSlide(ent, p, slideN, slideTotal){
         ${rowH("Capitaux propres","#F8FAFF","#475569")}
         ${row("Capital social",gf(p.capitalB))}
         ${row("Réserves",gf(p.reservesB))}
-        ${row("Report à nouveau",gf(p.rAnB))}
-        ${row("Résultat de l'exercice",gf(p.rnBilan))}
+        ${row("Report à nouveau & résultat en instance",gf(p.reportEtInstance!=null?p.reportEtInstance:p.rAnB))}
+        ${row("Résultat de la période",gf(p.resultatPeriode!=null?p.resultatPeriode:p.rnBilan))}
         ${p.subvB?row("Subventions",gf(p.subvB)):""}
         <tr style="background:rgba(${p.cpTot>=0?"34,197,94":"239,68,68"},0.06)"><td style="padding:7px 12px;font-size:12px;font-weight:700;color:${cpColor};border-bottom:1px solid #F3F5FA">→ Capitaux propres</td><td style="padding:7px 12px;font-size:13px;font-weight:800;color:${cpColor};text-align:right;border-bottom:1px solid #F3F5FA">${gf(p.cpTot)} €</td></tr>
         ${rowH("Dettes","#F8FAFF","#475569")}
@@ -4157,6 +4178,33 @@ function buildBilanSlide(ent, p, slideN, slideTotal){
 </div>
 <!-- FIN SLIDE BILAN -->`;}
 
+// ★ P1-8 26/07 — ALIAS COURTS D'ENTITÉS (générique) : chaque entité a un alias court unique
+//   (override answers.entAlias[id] OU sigle auto des mots distinctifs), utilisé partout où la place
+//   manque → plus aucune troncature ambiguë (« CENTRE MEDICO DE… » identique pour PC et MA).
+function kpltAssignAliases(ents, answers){
+  const norm=s=>(s||"").toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+  const STOP=new Set(["CMD","CENTRE","MEDICO","MEDICAL","DENTAIRE","SANTE","DE","DU","LA","LE","LES","DES","ET","SAS","SARL","SELARL","EURL","SCI","ASSOCIATION","GROUPE","CONSULTING","CABINET"]);
+  const ov=(answers&&answers.entAlias)||{};
+  const used=new Set();
+  (ents||[]).forEach(e=>{
+    let a = (ov[e.id]||"").trim();
+    if(!a){ const w=norm(e.name).split(/[^A-Z0-9]+/).filter(t=>t && !STOP.has(t));
+      const sig=w.map(x=>x[0]).join("");
+      a = (sig.length>=2) ? sig : ((w[0]||norm(e.name)).slice(0,7)); } // sigle ≥2, sinon 1er mot distinctif (ex. SITBEN)
+    let base=a, k=2; while(used.has(a)){ a=base+k; k++; }   // dédup
+    used.add(a); e._alias=a;
+  });
+  try{ window.KPLT_ENT_ALIAS = {}; (ents||[]).forEach(e=>{ window.KPLT_ENT_ALIAS[e.id]=e._alias; }); }catch(_){}
+  return ents;
+}
+// Nom court d'une entité pour affichage contraint : alias si le nom dépasse maxLen, sinon nom.
+function kpltEntShort(ent, maxLen){
+  if(!ent) return "";
+  const nm = ent.name || ent.id || "";
+  const mx = maxLen || 22;
+  return (nm.length <= mx) ? nm : (ent._alias || (window.KPLT_ENT_ALIAS && window.KPLT_ENT_ALIAS[ent.id]) || nm.slice(0,mx));
+}
+
 // ══════════════════════════════════════════════════════════════
 // buildChargesSlide — Génère la slide Structure des Charges
 // par entité avec un camembert SVG parfait côté JS
@@ -4172,6 +4220,11 @@ function buildChargesSlide(ents, parsedMap, answers, slideN, slideTotal){
     const ca = p.CA||1;
     const prodExpl = ca + (p.autresProd||0); // CA + subventions/autres produits (73-79x)
     const hasAutresProd = (p.autresProd||0) > ca*0.01; // > 1% du CA
+    // ★ P0-3 26/07 : dénominateur % UNIQUE = CA (70x) par défaut (param cabinet answers.denominateurPct
+    //   pour basculer en « Produits d'exploitation »). Colonne secondaire « % charges » (somme 100 %).
+    const _denomMode = (answers && answers.denominateurPct==="produits") ? "produits" : "CA";
+    const _denom = _denomMode==="produits" ? prodExpl : ca;
+    const _denomLabel = _denomMode==="produits" ? "% Produits" : "% CA";
     const sc_local = getSectorConfig();
     const isSAS = sc_local.hasAssoSasStructure && (ent.type==="sas" || (p.CA < (co.assoEnts[0]?parsedMap[co.assoEnts[0].id]?.CA||1:1)*0.8));
 
@@ -4201,12 +4254,23 @@ function buildChargesSlide(ents, parsedMap, answers, slideN, slideTotal){
     // Trier décroissant et filtrer vides
     rows = rows.filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
     const totalChg = rows.reduce((s,[,v])=>s+v, 0);
+    // ★ P1-7 26/07 : TOTAL toujours visible → compacter au-delà de 11 postes (les petits regroupés en
+    //   « Autres postes (N) ») pour que « Autres charges » et la ligne TOTAL ne sortent jamais de la slide.
+    //   Contrôle : Σ postes affichés == totalChg (l'agrégat « Autres » garantit l'égalité au centime).
+    const _MAXROWS = 11;
+    if(rows.length > _MAXROWS){
+      const keep = rows.slice(0, _MAXROWS-1);
+      const restSum = rows.slice(_MAXROWS-1).reduce((s,[,v])=>s+v,0);
+      keep.push(["Autres postes ("+(rows.length-(_MAXROWS-1))+")", restSum]);
+      rows = keep;
+    }
 
     const rowsHtml = rows.map(([label,val],i)=>`
       <tr style="background:${i%2===0?ALT:"#fff"}">
         <td style="padding:9px 12px;font-size:12px;color:#333">${label}</td>
         <td style="padding:7px 10px;text-align:right;font-size:11px;font-weight:600;color:${N}">${gf(val)}€</td>
-        <td style="padding:7px 10px;text-align:right;font-size:11px;color:#666">${pct(val,prodExpl)}</td>
+        <td style="padding:7px 10px;text-align:right;font-size:11px;color:#666">${pct(val,_denom)}</td>
+        <td style="padding:7px 10px;text-align:right;font-size:11px;color:#94A3B8">${pct(val,totalChg)}</td>
       </tr>`).join("");
 
     return `
@@ -4217,18 +4281,20 @@ function buildChargesSlide(ents, parsedMap, answers, slideN, slideTotal){
           <tr style="background:${N};color:#fff">
             <th style="padding:7px 10px;text-align:left;font-size:11px">Poste</th>
             <th style="padding:7px 10px;text-align:right;font-size:11px">Montant</th>
-            <th style="padding:7px 10px;text-align:right;font-size:11px">% Produits</th>
+            <th style="padding:7px 10px;text-align:right;font-size:11px">${_denomLabel}</th>
+            <th style="padding:7px 10px;text-align:right;font-size:11px">% charges</th>
           </tr>
         </thead>
         <tbody>${rowsHtml}
           <tr style="background:${N};color:#fff;font-weight:700">
             <td style="padding:9px 12px;font-size:12px">TOTAL CHARGES</td>
             <td style="padding:7px 10px;text-align:right;font-size:11px">${gf(totalChg)}€</td>
-            <td style="padding:7px 10px;text-align:right;font-size:11px">${pct(totalChg,prodExpl)}</td>
+            <td style="padding:7px 10px;text-align:right;font-size:11px">${pct(totalChg,_denom)}</td>
+            <td style="padding:7px 10px;text-align:right;font-size:11px">100,0%</td>
           </tr>
         </tbody>
       </table>
-      <div style="margin-top:5px;font-size:11px;color:#666">Produits d'exploitation : ${gf(prodExpl)}€ (CA ${gf(ca)}€${hasAutresProd?" + Subv./Autres "+(gf(p.autresProd))+"€":""})</div>
+      <div style="margin-top:5px;font-size:11px;color:#666">Dénominateur : <b>${_denomLabel}</b> (${_denomMode==="produits"?"Produits d'exploitation "+gf(prodExpl)+"€":"CA "+gf(ca)+"€"})${hasAutresProd?" · dont subventions/autres produits "+(gf(p.autresProd))+"€ (ligne dédiée sous le CA au CDR)":""}. Colonne « % charges » = part du total charges (somme 100 %).</div>
     </div>`;
   }
 
@@ -4382,7 +4448,7 @@ const R = {
 
 // ── Helpers communs ───────────────────────────────────────────────────
 function slideHeader(title, badge, n, total){ return R.hdr(title,badge,n,total); }
-function slideFooter(n, total){ return `<span style="color:#00C2CB;font-size:11px;font-weight:600">${n}/${total}</span>`; }
+function slideFooter(n, total){ const _bid=(typeof window!=="undefined"&&window.KPLT_BUILD_ID)||""; return `<span style="color:rgba(255,255,255,0.35);font-size:9px;font-weight:500">${_bid&&_bid.indexOf("__")<0?"KPLT · "+_bid:""}</span><span style="color:#00C2CB;font-size:11px;font-weight:600">${n}/${total}</span>`; }
 
 // ══════════════════════════════════════════════════════════════════════
 // DÉTECTION DES FLUX INTERCO — générique (tous secteurs, hors CdS spécifique)
@@ -4680,9 +4746,10 @@ function computeTagsCharges(parsedMap, ents, answers){
       const c651 = c.cpt.startsWith("651"); // ★ LOT 6 : redevance/franchise (651x) entre dans le périmètre tags
       if(!c60 && !c61 && !c62 && !c651) return;
       if(c60 && (c.cpt.startsWith("603") || c.cpt.startsWith("609"))) return;
-      // Montant : solde positif (61x/62x sont débit naturel)
-      const montant = Math.abs(c.solde || 0);
-      if(montant < 1) return;
+      // ★ P0-4 26/07 : montant NET (débit − crédit) — les avoirs se DÉDUISENT. L'ancien Math.abs par compte
+      //   gonflait les consommables (PC 191 866 au lieu de 166 442 net). Un seul périmètre NET partout.
+      const montant = c.solde || 0;
+      if(Math.abs(montant) < 1) return;
       
       // Tag : override manuel > auto
       const overrideKey = ent.id + "__" + c.cpt;
@@ -4723,6 +4790,10 @@ function computeTagsCharges(parsedMap, ents, answers){
   
   // Tri interne de chaque tag : comptes triés par montant décroissant
   Object.values(result).forEach(r => r.comptes.sort((a,b)=>b.montant-a.montant));
+
+  // ★ P0-4 : composition loguée du périmètre consommables (NET des avoirs) — traçabilité (throttlé).
+  try{ if(typeof window!=="undefined" && !window._KPLT_TAGS_NET_LOGGED){ window._KPLT_TAGS_NET_LOGGED=true;
+    const _cc=result.consommables; if(_cc && _cc.comptes.length) console.log("[TAGS-CONSO-NET] consommables = "+Math.round(_cc.total)+"€ (net des avoirs) :", _cc.comptes.map(x=>x.entName+" "+x.cpt+"="+Math.round(x.montant)).join(" | ")); } }catch(e){}
 
   return result;
 }
@@ -7308,12 +7379,241 @@ function buildS4Structure(ents, parsedMap, answers, n, total){
 }
 
 // ── S5 P&L ENTITÉ ────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════════════════════════════════
+// ★ C1-C3 (SYNC 25/07 kplt-analytics kopilot-core.js, commit 09b56e8) — CDR reconstruit sur le
+//   MAPPING COMPTES N1/N2 (plus jamais des préfixes bruts). Taxonomie universelle + override dossier
+//   (answers.mappingComptesN1N2[cpt]={n1,n2}) + pack sectoriel (getSectorConfig().planN2). Cascade
+//   style Transaction Services. Générique tous secteurs (aucun chiffre/nom en dur).
+// ════════════════════════════════════════════════════════════════════════════════════════════
+const KPLT_PLAN_N1 = ['Achats','Loyers','Frais généraux','Honoraires','Marketing','Personnel','Rémunération dirigeant','Impôts & taxes','Charges financières','DAP','Charges exceptionnelles'];
+const KPLT_DEFAULT_MAPPING = {
+  '601':{n1:'Achats',n2:'Matières premières'},'602':{n1:'Achats',n2:'Autres approvisionnements'},'604':{n1:'Achats',n2:'Études et prestations'},'605':{n1:'Achats',n2:'Matériel et travaux'},'607':{n1:'Achats',n2:'Marchandises'},'608':{n1:'Achats',n2:'Frais accessoires'},'603':{n1:'Achats',n2:'Variation de stocks'},
+  '6122':{n1:'Loyers',n2:'Crédit-bail mobilier'},'6125':{n1:'Loyers',n2:'Crédit-bail immobilier'},'612':{n1:'Loyers',n2:'Crédit-bail'},'6132':{n1:'Loyers',n2:'Locations immobilières'},'6135':{n1:'Loyers',n2:'Locations mobilières'},'613':{n1:'Loyers',n2:'Locations'},'614':{n1:'Loyers',n2:'Charges locatives'},
+  '606':{n1:'Frais généraux',n2:'Énergie / fournitures'},'6063':{n1:'Frais généraux',n2:'Fournitures entretien'},'6064':{n1:'Frais généraux',n2:'Fournitures bureau'},'615':{n1:'Frais généraux',n2:'Entretien & réparations'},'6161':{n1:'Frais généraux',n2:'Assurances'},'616':{n1:'Frais généraux',n2:'Assurances'},'618':{n1:'Frais généraux',n2:'Divers (doc, séminaires)'},'624':{n1:'Frais généraux',n2:'Transports sur biens'},'626':{n1:'Frais généraux',n2:'Postes & télécoms'},'628':{n1:'Frais généraux',n2:'Divers services'},'65':{n1:'Frais généraux',n2:'Autres charges de gestion'},
+  '6225':{n1:'Honoraires',n2:'Expert-comptable / CAC'},'6226':{n1:'Honoraires',n2:'Avocat / juridique'},'6227':{n1:'Honoraires',n2:"Frais d'actes"},'622':{n1:'Honoraires',n2:'Honoraires & intermédiaires'},
+  '6231':{n1:'Marketing',n2:'Publicité'},'623':{n1:'Marketing',n2:'Publicité'},'6251':{n1:'Marketing',n2:'Voyages / déplacements'},'6257':{n1:'Marketing',n2:'Réceptions'},'625':{n1:'Marketing',n2:'Déplacements & missions'},
+  '621':{n1:'Personnel',n2:'Intérim / extérieur'},'6411':{n1:'Personnel',n2:'Salaires bruts'},'641':{n1:'Personnel',n2:'Salaires'},'642':{n1:'Personnel',n2:'Apprentissage'},'645':{n1:'Personnel',n2:'Charges sociales'},'647':{n1:'Personnel',n2:'Avantages divers'},'648':{n1:'Personnel',n2:'Autres charges'},'6185':{n1:'Personnel',n2:'Formation'},
+  '644':{n1:'Rémunération dirigeant',n2:'Rémunération exploitant'},'646':{n1:'Rémunération dirigeant',n2:'Cotisations TNS'},
+  '631':{n1:'Impôts & taxes',n2:'Taxes sur rémunérations'},'633':{n1:'Impôts & taxes',n2:'Autres taxes salaires'},'635':{n1:'Impôts & taxes',n2:'Autres impôts'},'637':{n1:'Impôts & taxes',n2:'Taxes diverses'},'63':{n1:'Impôts & taxes',n2:'Impôts et taxes'},
+  '661':{n1:'Charges financières',n2:'Intérêts emprunts'},'66':{n1:'Charges financières',n2:'Charges financières'},
+  '627':{n1:'Frais généraux',n2:'Services bancaires'}, // ★ 627 = services extérieurs (62x) → OPÉRATIONNEL (dans l'EBITDA, cohérent SSOT parseFEC), pas « charges financières »
+  '681':{n1:'DAP',n2:'Amortissements'},'686':{n1:'DAP',n2:'Dotations financières'},'68':{n1:'DAP',n2:'Dotations'},
+  '671':{n1:'Charges exceptionnelles',n2:'Opérations de gestion'},'675':{n1:'Charges exceptionnelles',n2:'VNC actifs cédés'},'67':{n1:'Charges exceptionnelles',n2:'Charges exceptionnelles'},
+  // ★ Catch-all racines (préfixe le moins précis) — garantit qu'AUCUN compte 6x d'exploitation n'est
+  //   « non classé » → la cascade reconstruite réconcilie l'EBITDA. Les préfixes précis ci-dessus priment.
+  '60':{n1:'Achats',n2:'Autres achats'},'61':{n1:'Frais généraux',n2:'Services extérieurs'},'62':{n1:'Frais généraux',n2:'Autres services extérieurs'},'64':{n1:'Personnel',n2:'Charges de personnel'},
+};
+function kpltMapCompteN1N2(cpt, answers){
+  const c = (cpt||"").toString();
+  // 1) override dossier (Mapping comptes édité par l'utilisateur) — priorité absolue
+  const ov = (answers && answers.mappingComptesN1N2) || {};
+  if(ov[c] && ov[c].n1) return { n1:ov[c].n1, n2:ov[c].n2||"(non détaillé)" };
+  // 2) pack sectoriel (N2 en plus du socle) puis 3) socle universel — préfixe le plus précis (5→2)
+  let sectorMap = null; try{ const sc=getSectorConfig(); sectorMap=(sc&&sc.planN2)||null; }catch(e){}
+  for(let len=Math.min(c.length,5); len>=2; len--){
+    const key=c.substring(0,len);
+    if(sectorMap && sectorMap[key] && sectorMap[key].n1) return { ...sectorMap[key] };
+    if(KPLT_DEFAULT_MAPPING[key]) return { ...KPLT_DEFAULT_MAPPING[key] };
+  }
+  return { n1:null, n2:null };  // non classifié
+}
+// Cascade CDR reconstruite (top-down) sur le mapping N1/N2 — réconcilie l'EBITDA/RN SSOT (p.EBITDA/p.RN).
+function kpltComputePnlN1N2(ent, p, answers){
+  const list = Array.isArray(p.comptesList) ? p.comptesList : [];
+  const isInterco = (cpt,lib)=>{ const s=String(cpt||"");
+    const ov=(answers&&answers.tagsCharges&&answers.tagsCharges.overrides)||{};
+    const t=ov[ent.id+"__"+s]||ov[s]||null; if(t==="interco"||t==="interco_conso"||t==="interco_services") return true; if(t&&t!=="interco") return false;
+    try{ const _sel=(typeof kpltHasIntercoSel==="function")&&kpltHasIntercoSel(ent.id,answers); if(_sel&&typeof kpltIsIntercoFourn==="function"&&kpltIsIntercoFourn(ent.id,lib,answers)) return true; }catch(e){}
+    return s.startsWith("604"); };
+  // Produits d'exploitation (7x hors financier 76 / exceptionnel 77) — détail CA par activité (70x par N2=libellé) + subventions.
+  const caParActivite={}; let ca=0, subv=0, autresProdExpl=0;
+  list.forEach(c=>{ const s=String(c.cpt||""); if(s[0]!=="7") return; const v=(c.solde<0?-c.solde:Math.abs(c.solde)); // 7x : crédit
+    if(s.startsWith("70")){ ca+=v; const lab=(c.lib||c.libelle||"CA").trim().substring(0,32); caParActivite[lab]=(caParActivite[lab]||0)+v; }
+    else if(s.startsWith("74")) subv+=v;
+    else if(s.startsWith("71")||s.startsWith("72")||s.startsWith("75")||s.startsWith("79")) autresProdExpl+=v; });
+  if(ca===0 && p.CA){ ca=p.CA; } // fallback SSOT si comptesList vide
+  const produitsExpl = ca + subv + autresProdExpl;
+  // Charges 6x → N1>N2, hors interco (isolé). Buckets cascade.
+  const catN1={}; const pushN1=(n1,n2,cpt,v)=>{ if(!catN1[n1])catN1[n1]={total:0,n2:{}}; catN1[n1].total+=v; const k=n2||"(non détaillé)"; if(!catN1[n1].n2[k])catN1[n1].n2[k]={total:0,comptes:[]}; catN1[n1].n2[k].total+=v; catN1[n1].n2[k].comptes.push({cpt,v}); };
+  let interco=0, consommables=0, leasing612=0, remDir=0, nonClasse=0;
+  list.forEach(c=>{ const s=String(c.cpt||""); if(s[0]!=="6") return; const v=(c.solde||0); if(Math.abs(v)<0.005) return; const lib=c.lib||c.libelle||"";
+    if(isInterco(s,lib)){ interco+=Math.abs(v); return; }                                  // interco → ligne à part
+    const m=kpltMapCompteN1N2(s,answers);
+    if(!m.n1){ nonClasse+=v; pushN1('(non classé)',s,s,v); return; }
+    pushN1(m.n1,m.n2,s,v);
+    if(m.n1==='Achats') consommables+=v;                                                   // Consommables = N1 Achats (hors interco 604 déjà isolé)
+    if(m.n1==='Loyers' && (s.startsWith('612')||s.startsWith('6122')||s.startsWith('6125'))) leasing612+=v; // crédit-bail → EBITDAR
+    if(m.n1==='Rémunération dirigeant') remDir+=v;
+  });
+  // ★ P1-6 26/07 — RÉMUNÉRATION DIRIGEANT transverse : les honoraires de gestion/mandat du dirigeant
+  //   (souvent via société tierce en 604/622, libellé « mandat / présidence / gérance ») ne sont PAS des
+  //   consommables ni des frais généraux → catégorie PROPRE, sortie de la marge brute. 644/646 déjà en
+  //   N1 « Rémunération dirigeant ». Détection au niveau ÉCRITURE (le libellé de compte est générique).
+  //   ⚠️ Un mandat de gestion à une SOCIÉTÉ TIERCE EXTERNE (ex. ERAM) n'est PAS de l'interco groupe
+  //   (le tiers n'est pas une entité du groupe) : on le SORT de là où il a atterri (interco OU consommables
+  //   OU frais généraux) pour l'isoler en « Rémunération dirigeant ».
+  let remDirMandate=0, _mandFromAchats=0, _mandFromFG=0, _mandFromInterco=0;
+  if(Array.isArray(p.ecrituresClasse6Detail)){
+    const _nl=s=>(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+    p.ecrituresClasse6Detail.forEach(x=>{ const cpt=String(x.cpt||""); if(cpt.startsWith("644")||cpt.startsWith("646")) return; // déjà en N1 rém. dir.
+      const lib=_nl(x.libelle||""); if(!/mandat|presidence|gerance|gestion dirigeant|honoraires de direction/.test(lib)) return;
+      const mt=(x.mtNet!=null?x.mtNet:((x.debit||0)-(x.credit||0)))||0; if(Math.abs(mt)<0.005) return;
+      remDirMandate+=mt;
+      if(isInterco(cpt, x.libelle||"")) _mandFromInterco+=Math.abs(mt);                       // atterri en interco (604 par défaut)
+      else { const mm=kpltMapCompteN1N2(cpt,answers);
+        if(mm.n1==='Achats') _mandFromAchats+=mt; else if(['Loyers','Frais généraux','Honoraires','Marketing'].indexOf(mm.n1)>=0) _mandFromFG+=mt; }
+    });
+  }
+  const sumN1 = names => names.reduce((s,nm)=>s+((catN1[nm]&&catN1[nm].total)||0),0);
+  interco = Math.max(0, interco - _mandFromInterco);                                          // sortir le mandat de l'interco (tiers externe)
+  consommables = consommables - _mandFromAchats;                                              // sortir le mandat des consommables
+  const fraisGeneraux = sumN1(['Loyers','Frais généraux','Honoraires','Marketing']) - _mandFromFG;
+  const masseSalariale = sumN1(['Personnel']);                                                // MS = Personnel SEUL (rém. dir. à part)
+  const remDirTotal = sumN1(['Rémunération dirigeant']) + remDirMandate;                       // 644/646 + mandat société tierce
+  const impotsTaxes = sumN1(['Impôts & taxes']);
+  const margeBrute = produitsExpl - consommables;                                             // consommables corrigés → marge brute juste
+  const ebitdaRecon = margeBrute - interco - fraisGeneraux - masseSalariale - remDirTotal - impotsTaxes;
+  const ebitda = (typeof p.EBITDA==="number") ? p.EBITDA : ebitdaRecon;                    // SSOT prioritaire
+  const ebitdar = ebitda + leasing612;
+  const dap = sumN1(['DAP']) || (p.dotAmort||0);
+  const financier = (p.chgFin||0)-(p.prodFin||0);
+  const exceptionnel = (p.chgExcep||0)-(p.prodExcep||0);
+  const is = p.IS||0;
+  const rn = (typeof p.RN==="number") ? p.RN : (ebitda - dap - financier - exceptionnel - is);
+  return { ca, subv, autresProdExpl, produitsExpl, caParActivite, catN1, interco, consommables, margeBrute,
+    fraisGeneraux, masseSalariale, remDir:remDirTotal, remDirMandate:Math.round(remDirMandate), impotsTaxes, ebitda, ebitdaRecon, leasing612, ebitdar, dap, financier, exceptionnel, is, rn,
+    ecartRecon: Math.round(ebitda-ebitdaRecon), nonClasse:Math.round(nonClasse) };
+}
+
+// ★ C2 25/07 — rendu CDR style Transaction Services : négatifs entre parenthèses en couleur NEUTRE,
+//   rouge réservé aux vraies alertes (déficit) ; séparateurs de milliers ; % CA systématique ;
+//   sous-totaux gras avec filet ; barres horizontales par bloc N1 triées décroissantes.
+function buildS5PLcascadeN1N2(ent, p, answers, n, total, isSas){
+  if(!p || !Array.isArray(p.comptesList) || p.comptesList.length===0) return "";
+  const d = kpltComputePnlN1N2(ent, p, answers);
+  const gf=R.gf, N="#0A1E6E", NEUTRAL="#334155", MUT="#64748B", RED="#B91C1C", CY="#00C2CB";
+  const ca = d.ca || p.CA || 0;
+  const money = v => { const a=Math.round(Math.abs(v)); return (v<0? "("+gf(a)+")" : gf(a)); };
+  const pctCA = v => ca>0 ? (Math.abs(v)/ca*100).toFixed(1)+"%" : "";
+  // ligne générique. montant SIGNÉ (charges négatives). opts: {bold, sub, filet, memo, alert, color}
+  const line = (label, montant, opts={}) => {
+    const isSub = opts.sub;
+    const col = opts.alert ? RED : (opts.color || (opts.bold? N : NEUTRAL));
+    const fw = opts.bold ? "700" : (isSub?"400":"500");
+    const bg = opts.bold ? "background:#F0F4FF;" : "";
+    const bord = opts.filet ? "border-top:2px solid #0A1E6E;" : "border-bottom:1px solid #F1F5F9;";
+    const padL = isSub ? "26px" : "13px";
+    const fs = isSub ? "11px" : "12.5px";
+    const lblCol = isSub ? MUT : (opts.bold? N : "#1E293B");
+    const pv = isSub ? "3px" : "5px";
+    return `<tr style="${bg}${bord}">
+      <td style="padding:${pv} 12px ${pv} ${padL};font-size:${fs};color:${lblCol};font-weight:${isSub?400:fw}">${label}${opts.memo?` <span style="font-size:10px;color:${MUT};font-style:italic">${opts.memo}</span>`:""}</td>
+      <td style="padding:${pv} 12px;font-size:${fs};text-align:right;color:${col};font-weight:${fw};font-variant-numeric:tabular-nums">${money(montant)} €</td>
+      <td style="padding:${pv} 12px;font-size:${isSub?'10.5':'11.5'}px;text-align:right;color:${MUT};font-variant-numeric:tabular-nums">${opts.noPct?"":pctCA(montant)}</td>
+    </tr>`;
+  };
+  // Détail N2 : top K + « autres »
+  const n2Lines = (n1names, topK) => {
+    const agg={}; n1names.forEach(nm=>{ const cc=d.catN1[nm]; if(!cc) return; Object.entries(cc.n2).forEach(([k,v])=>{ agg[k]=(agg[k]||0)+v.total; }); });
+    const sorted=Object.entries(agg).filter(([,v])=>Math.abs(v)>0.5).sort((a,b)=>b[1]-a[1]);
+    const top=sorted.slice(0,topK); const rest=sorted.slice(topK).reduce((s,[,v])=>s+v,0);
+    let h=top.map(([k,v])=>line(k,-v,{sub:true})).join("");
+    if(Math.abs(rest)>0.5) h+=line("Autres",-rest,{sub:true});
+    return h;
+  };
+  // CA par activité (top 3 + autres — densité slide 16:9)
+  const caAct = Object.entries(d.caParActivite||{}).filter(([,v])=>v>0.5).sort((a,b)=>b[1]-a[1]);
+  const caTop = caAct.slice(0,3), caRest = caAct.slice(3).reduce((s,[,v])=>s+v,0);
+  let produitsDetail = caTop.map(([k,v])=>line(k,v,{sub:true,noPct:true})).join("");
+  if(caRest>0.5) produitsDetail += line("Autres activités",caRest,{sub:true,noPct:true});
+  if(d.subv>0.5) produitsDetail += line("Subventions d'exploitation (74x)",d.subv,{sub:true,noPct:true});
+  if(Math.abs(d.autresProdExpl)>0.5) produitsDetail += line("Autres produits d'exploitation",d.autresProdExpl,{sub:true,noPct:true});
+
+  const rnAlert = d.rn < 0;
+  const rows = [
+    line("Produits d'exploitation", d.produitsExpl, {bold:true}),
+    produitsDetail,
+    line("Consommables", -d.consommables, {}),
+    n2Lines(['Achats'],4),
+    line("= MARGE BRUTE", d.margeBrute, {bold:true, filet:true}),
+    d.interco>0.5 ? line("Interco (refacturations intra-groupe)", -d.interco, {color:"#7C3AED"}) : "",
+    line("Frais généraux", -d.fraisGeneraux, {}),
+    n2Lines(['Loyers','Frais généraux','Honoraires','Marketing'],4),
+    line("Masse salariale", -d.masseSalariale, {}),
+    d.remDir>0.5 ? line("Rémunération dirigeant", -d.remDir, {memo: d.remDirMandate>0.5? "dont mandat/société tierce "+gf(d.remDirMandate)+"€":""}) : "",
+    line("Impôts & taxes", -d.impotsTaxes, {}),
+    Math.abs(d.ecartRecon)>=Math.max(200,ca*0.001) ? line("Écarts d'arrondi / non ventilé", d.ecartRecon, {sub:true, color:MUT, noPct:true}) : "",
+    line("= EBITDA", d.ebitda, {bold:true, filet:true}),
+    d.leasing612>0.5 ? line("+ Crédit-bail (mémo) → EBITDAR", d.ebitdar, {sub:true, color:MUT, noPct:false}) : "",
+    line("− Dotations amort. & prov. (DAP)", -d.dap, {}),
+    line("− Résultat financier", -d.financier, {}),
+    Math.abs(d.exceptionnel)>0.5 ? line("− Résultat exceptionnel", -d.exceptionnel, {}) : "",
+    d.is>0.5 ? line("− Impôt sur les sociétés", -d.is, {}) : "",
+    Math.abs(d.nonClasse)>=1 ? line("[Non classé] (comptes 6x/7x non mappés)", -d.nonClasse, {sub:true, alert:true, noPct:true}) : "", // ★ P0-1.4
+    line("= RÉSULTAT NET", d.rn, {bold:true, filet:true, alert:rnAlert}),
+  ].filter(Boolean).join("");
+
+  // ★ P0-1.2 — Contrôle d'intégrité 2 étages : (a) FEC équilibré, (b) RN CDR = résultat de la période au bilan.
+  const _fecOk = (p.fecEquilibre !== false);
+  const _rp = (typeof p.resultatPeriode==="number") ? p.resultatPeriode : null;
+  const _ecartB = (_rp!=null) ? Math.round((d.rn - _rp)*100)/100 : 0;
+  const _intOk = (_rp==null) || Math.abs(_ecartB) < 0.02;
+  const badge=(ok,txt)=>`<span style="padding:3px 10px;border-radius:6px;font-weight:700;font-size:10.5px;background:${ok?'#DCFCE7':'#FEF2F2'};color:${ok?'#15803D':'#B91C1C'}">${ok?'✓':'✗'} ${txt}</span>`;
+  const integrite=`<div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    ${badge(_fecOk, "FEC équilibré (Σ débits = Σ crédits)"+(_fecOk?"":" — écart "+gf(p.fecEcartEquilibre||0)+"€"))}
+    ${badge(_intOk, "RN CDR = résultat de la période"+(_intOk?" ("+gf(d.rn)+"€)":" — écart "+gf(_ecartB)+"€ (bug de mapping)"))}
+  </div>`;
+
+  const tbl = `<table style="width:100%;border-collapse:collapse">
+    <thead><tr style="background:${N}"><th style="padding:11px 13px;font-size:11px;color:white;text-align:left;font-weight:700">Poste (mapping N1/N2)</th><th style="padding:11px 13px;font-size:11px;color:white;text-align:right;font-weight:700">Montant</th><th style="padding:11px 13px;font-size:11px;color:white;text-align:right;font-weight:700">% CA</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    ${integrite}
+    <div style="margin-top:5px;font-size:10px;color:${MUT};line-height:1.4">Négatifs entre parenthèses. Charges classées par le Mapping comptes N1/N2 du dossier. Le résultat de la période (Σ produits − Σ charges) est distinct du report à nouveau &amp; résultat en instance d'affectation (12x d'À-Nouveaux).</div>`;
+
+  // Barres horizontales par bloc N1 (charges), triées décroissantes.
+  const blocs = [
+    {l:"Consommables", v:d.consommables, c:"#0EA5E9"},
+    {l:"Interco", v:d.interco, c:"#7C3AED"},
+    {l:"Frais généraux", v:d.fraisGeneraux, c:"#6366F1"},
+    {l:"Masse salariale", v:d.masseSalariale, c:"#0A1E6E"},
+    {l:"Rémunération dirigeant", v:d.remDir, c:"#8B5CF6"},
+    {l:"Impôts & taxes", v:d.impotsTaxes, c:"#F59E0B"},
+  ].filter(b=>b.v>0.5).sort((a,b)=>b.v-a.v);
+  const maxB = Math.max(...blocs.map(b=>b.v), 1);
+  const bars = blocs.map(b=>{
+    const w = Math.round(b.v/maxB*100);
+    return `<div style="margin-bottom:11px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:#1E293B;font-weight:600">${b.l}</span><span style="color:${MUT};font-variant-numeric:tabular-nums">${gf(Math.round(b.v))}€ · ${ca>0?(b.v/ca*100).toFixed(1):0}%</span></div>
+      <div style="background:#EEF2F7;border-radius:5px;height:16px;overflow:hidden"><div style="width:${w}%;height:100%;background:${b.c};border-radius:5px"></div></div>
+    </div>`;
+  }).join("");
+  const ebPct = ca>0?(d.ebitda/ca*100).toFixed(1):"—";
+  const rightPanel = `<div style="flex:0.72;display:flex;flex-direction:column;gap:14px">
+    <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px">
+      <div style="font-size:11px;color:${MUT};text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px">EBITDA</div>
+      <div style="font-size:30px;font-weight:800;color:${d.ebitda<0?RED:N}">${money(d.ebitda)} €</div>
+      <div style="font-size:12px;color:${MUT}">${ebPct}% du CA · Marge brute ${ca>0?(d.margeBrute/ca*100).toFixed(1):0}%</div>
+    </div>
+    <div>
+      <div style="font-size:12px;font-weight:700;color:${N};margin-bottom:10px">Structure des charges par bloc (N1)</div>
+      ${bars}
+    </div>
+  </div>`;
+
+  const body = `<div style="display:flex;gap:22px;flex:1"><div style="flex:1.28">${tbl}</div>${rightPanel}</div>`;
+  const per = (typeof kpltPeriodeLabel==="function")? "" : "";
+  return R.slide(R.hdr("Compte de résultat — "+(ent.name||"Entité"), (isSas?"SAS de gestion · ":"")+(answers.exercice||""), n, total), body, slideFooter(n,total));
+}
+
 function buildS5PL(ent, p, answers, n, total, isSas=false){
   if(!p) return "";
   const gf=R.gf, pct=R.pctN;
   const title = "P&L " + (ent.name||"Entité");
   const ex = answers.exercice||"N/A";
   const ca=p.CA||0;
+  // ★ C1-C3 25/07 : nouveau CDR N1/N2 style Transaction Services (remplace la cascade préfixes/tags).
+  try { const _n1n2 = buildS5PLcascadeN1N2(ent, p, answers, n, total, isSas); if(_n1n2) return _n1n2; }
+  catch(e){ console.error("[KPLT_PNL_N1N2] fallback cascade legacy :", e && e.message); }
 
   // Table P&L (left side)
   const row = (label,val,bold,isNeg,isSub) => {
@@ -11378,6 +11678,149 @@ function kpltIntercoSymmetryBlock(sym){
   </div>`;
 }
 
+// ★ FIX 25/07 — ANALYTIQUE SAS DE GESTION PAR SITE (batch C4). Ventile les charges de la SAS de
+//   gestion par site via les INTITULÉS de comptes du FEC (générique, zéro nom en dur), en 4 blocs :
+//   directes site A / directes site B / mixtes (site multi-centres, clé) / communes (overhead, clé).
+//   Hors DAP 68 / financier 66 / exceptionnel 67 / IS 69 (analyse OPÉRATIONNELLE de site). Rapproche le
+//   coût réel alloué à chaque centre avec ce qui lui est FACTURÉ (interco 604) → écart de marge par site.
+function computeSasAnalytiqueParSite(ents, parsedMap, co){
+  if(!co || !co.sasEnt || !Array.isArray(co.assoEnts) || co.assoEnts.length<2) return null;
+  const sasp = parsedMap[co.sasEnt.id]; if(!sasp || !Array.isArray(sasp.comptesList)) return null;
+  const norm = s=>(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+  const STOP=new Set(["cmd","centre","sante","de","du","des","la","le","les","consulting","cabinet","dentaire","medico","medical","selarl","sas","sarl","association","groupe"]);
+  // ★ FIX 26/07 (P0-2) : matching par MOTS-CLÉS DE SITE (pas le nom complet). Défaut = tokens DISTINCTIFS
+  //   du nom (uniques à un centre) + SIGLE auto (initiales, ex. « cmdpc ») + override dossier
+  //   answers.multicentres.siteKeywords[entId]. Match par .some() (au moins un mot-clé), pas .every().
+  const sigleOf = name => { const w=norm(name).split(/[^a-z0-9]+/).filter(t=>t && !STOP.has(t)); return w.map(x=>x[0]).join(""); };
+  const _rawToks = co.assoEnts.map(e=>({ id:e.id, name:e.name, toks:norm(e.name).split(/[^a-z]+/).filter(t=>t.length>=4&&!STOP.has(t)) }));
+  const _freq={}; _rawToks.forEach(a=>a.toks.forEach(t=>_freq[t]=(_freq[t]||0)+1));
+  let _kwOverride={}; try{ _kwOverride=(ST.answers&&ST.answers.multicentres&&ST.answers.multicentres.siteKeywords)||{}; }catch(e){}
+  let _aliasOv={}; try{ _aliasOv=(ST.answers&&ST.answers.entAlias)||{}; }catch(e){}
+  const assoTok = co.assoEnts.map(e=>{
+    const rt=_rawToks.find(x=>x.id===e.id)||{toks:[]};
+    const distinctive=rt.toks.filter(t=>_freq[t]===1);                 // tokens uniques à ce centre
+    const sig=sigleOf(e.name);
+    const configured=(_kwOverride[e.id]||[]).map(norm).filter(Boolean);
+    const keys=[...new Set([...configured, ...distinctive, sig].filter(k=>k&&k.length>=3))];
+    const alias=(_aliasOv[e.id]||sig.toUpperCase()||e.name);           // ★ P1-8 : alias court (override ou sigle auto)
+    return { id:e.id, name:e.name, alias, keys, ca:(parsedMap[e.id]&&parsedMap[e.id].CA)||0 };
+  });
+  const direct={}; assoTok.forEach(a=>direct[a.id]=0);
+  let mixte=0, communes=0, remDir=0; const detail={mixteComptes:[], communesRacine:{}, directDetail:{}};
+  assoTok.forEach(a=>detail.directDetail[a.id]=[]);
+  sasp.comptesList.forEach(c=>{
+    const cpt=String(c.cpt||""); if(cpt[0]!=="6") return;
+    // ★ FIX 25/07 (point 4) : TOTAL des charges 6x de la SAS (y compris DAP 68 / financier 66 / exceptionnel 67)
+    //   → communs incluent l'overhead complet. Calage : total SAS 413 518, communs ≈ 239 787.
+    const v=c.solde||0; if(Math.abs(v)<0.5) return;
+    const lib=norm(c.lib||"");
+    if(/^(612|613|614)/.test(cpt)){                     // charge de site
+      const hits=assoTok.filter(a=>a.keys.length && a.keys.some(k=>lib.includes(k)));   // ★ .some() sur mots-clés
+      if(hits.length===1){ direct[hits[0].id]+=v; detail.directDetail[hits[0].id].push({cpt,lib:c.lib||"",v:Math.round(v)}); return; }
+      if(hits.length>=2){ mixte+=v; detail.mixteComptes.push({cpt,lib:c.lib||"",v:Math.round(v)}); return; } // ≥2 centres → mixte
+      // aucun centre reconnu → charge de site générique → communes (répartie par clé)
+      communes+=v; const rs=cpt.slice(0,3); detail.communesRacine[rs]=(detail.communesRacine[rs]||0)+v; return;
+    }
+    communes+=v; const rac=cpt.slice(0,3); detail.communesRacine[rac]=(detail.communesRacine[rac]||0)+v;
+  });
+  // ★ FIX 26/07 : rém. dirigeant SAS (sous-ligne des communes) via les LIBELLÉS D'ÉCRITURE (le libellé de
+  //   compte est générique) — 644/646 OU « mandat de présidence / gérance / gestion dirigeant » (souvent 604/622
+  //   via une société tierce, ex. mandat ERAM). Générique, aucun montant en dur.
+  if(Array.isArray(sasp.ecrituresClasse6Detail)){
+    sasp.ecrituresClasse6Detail.forEach(x=>{ const cpt=String(x.cpt||""); const lib=norm(x.libelle||"");
+      if(/^(644|646)/.test(cpt) || /mandat|presidence|gerance|gestion dirigeant|honoraires de direction/.test(lib)) remDir += (x.mtNet!=null?x.mtNet:((x.debit||0)-(x.credit||0)))||0; });
+  }
+  const cleCommun=(co.qpSasSiteDetail&&co.qpSasSiteDetail.cle)||"caExterne";
+  const caTot=assoTok.reduce((s,a)=>s+a.ca,0)||1;
+  const parCentre=assoTok.map(a=>{
+    const share=a.ca/caTot;
+    const coutDirect=Math.round(direct[a.id]||0);
+    const coutMixte=Math.round(mixte*share);
+    const coutCommun=Math.round(communes*share);
+    const coutTotal=coutDirect+coutMixte+coutCommun;
+    const facture=Math.round(Math.abs((parsedMap[a.id]&&parsedMap[a.id].achatsInterco604)||0)); // 604 payé par l'asso à la SAS
+    const ecart=facture-coutTotal;                                     // >0 : l'asso surpaie la SAS (sous-estime son EBITDA)
+    const ebitdaComptable=Math.round((parsedMap[a.id]&&parsedMap[a.id].EBITDA)||0);
+    const ebitdaEco=ebitdaComptable+ecart;                            // EBITDA économique = comptable corrigé de l'écart de facturation
+    return { id:a.id, name:a.name, alias:a.alias, sharePct:+(share*100).toFixed(1), coutDirect, coutMixte, coutCommun, coutTotal, facture, ecart, ebitdaComptable, ebitdaEco };
+  });
+  return { sasName:co.sasEnt.name, cleCommun, mixte:Math.round(mixte), communes:Math.round(communes), remDir:Math.round(remDir), detail, parCentre,
+    totalCout:parCentre.reduce((s,p)=>s+p.coutTotal,0), totalFacture:parCentre.reduce((s,p)=>s+p.facture,0),
+    totalEbitdaEco:parCentre.reduce((s,p)=>s+p.ebitdaEco,0) };
+}
+
+function buildSAnalytiqueSasParSite(ents, parsedMap, co, n, total){
+  const d = computeSasAnalytiqueParSite(ents, parsedMap, co);
+  if(!d) return "";
+  const gf=R.gf, N="#0A1E6E", C="#00C2CB";
+  const par = v=>v<0 ? "("+gf(Math.abs(v))+")" : gf(v); // style TS : négatif entre parenthèses
+  const cleLabel = d.cleCommun==="caExterne" ? "prorata du CA externe des centres" : "clé paramétrée";
+  // 4 blocs
+  const blocDirect = d.parCentre.map((p,i)=>`<div style="flex:1;background:${i%2?'#F0F9FF':'#F8FAFC'};border:1px solid #E2E8F0;border-radius:8px;padding:12px">
+      <div style="font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:.3px">Directes — ${p.alias||R.sn(p.name,22)}</div>
+      <div style="font-size:24px;font-weight:800;color:${N}">${gf(p.coutDirect)} €</div>
+      <div style="font-size:10.5px;color:#94A3B8">comptes 612x/613x/614x nominatifs du site</div>
+    </div>`).join("");
+  const blocMixteCommun = `<div style="flex:1;background:#FFF7ED;border:1px solid #FED7AA;border-radius:8px;padding:12px">
+      <div style="font-size:11px;color:#9A3412;text-transform:uppercase;letter-spacing:.3px">Mixtes (site multi-centres)</div>
+      <div style="font-size:24px;font-weight:800;color:#9A3412">${gf(d.mixte)} €</div>
+      <div style="font-size:10.5px;color:#B45309">réparti par ${cleLabel} — hypothèse</div>
+    </div>
+    <div style="flex:1;background:#F1F5F9;border:1px solid #CBD5E1;border-radius:8px;padding:12px">
+      <div style="font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:.3px">Communes (overhead SAS)</div>
+      <div style="font-size:24px;font-weight:800;color:#334155">${gf(d.communes)} €</div>
+      <div style="font-size:10.5px;color:#64748B">MS, honoraires… — réparti par ${cleLabel}${d.remDir>0?`<br><b>dont rém. dirigeant ${gf(d.remDir)} €</b>`:""}</div>
+    </div>`;
+  // Rapprochement facturation interco par centre
+  const recoRows = d.parCentre.map((p,i)=>{
+    const negEcart = p.ecart<0;
+    return `<tr style="background:${i%2===0?'white':'#F3F5FA'}">
+      <td style="padding:9px 12px;font-size:12px;font-weight:600;color:${N}">${p.alias||R.sn(p.name,26)}</td>
+      <td style="padding:9px 12px;font-size:12px;text-align:right">${par(p.coutDirect)}</td>
+      <td style="padding:9px 12px;font-size:12px;text-align:right">${par(p.coutMixte)}</td>
+      <td style="padding:9px 12px;font-size:12px;text-align:right">${par(p.coutCommun)}</td>
+      <td style="padding:9px 12px;font-size:12px;text-align:right;font-weight:700">${par(p.coutTotal)}</td>
+      <td style="padding:9px 12px;font-size:12px;text-align:right;color:#1E40AF;font-weight:700">${par(p.facture)}</td>
+      <td style="padding:9px 12px;font-size:13px;text-align:right;font-weight:800;color:${negEcart?'#B91C1C':'#15803D'}">${par(p.ecart)}</td>
+    </tr>`;
+  }).join("");
+  const body=`<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+    <div style="font-size:12px;color:#475569;line-height:1.5">Ventilation de <b>toutes les charges</b> de la SAS de gestion <b>${R.sn(d.sasName,30)}</b> par site (via les intitulés de comptes du FEC), rapprochée de la facturation interco (604) supportée par chaque centre.</div>
+    <div style="display:flex;gap:12px">${blocDirect}${blocMixteCommun}</div>
+    <table style="width:100%;border-collapse:collapse;margin-top:4px">
+      <thead><tr style="background:${N};color:white">
+        <th style="padding:9px 12px;font-size:11px;text-align:left">Centre</th>
+        <th style="padding:9px 12px;font-size:11px;text-align:right">Directes</th>
+        <th style="padding:9px 12px;font-size:11px;text-align:right">Mixtes (QP)</th>
+        <th style="padding:9px 12px;font-size:11px;text-align:right">Communes (QP)</th>
+        <th style="padding:9px 12px;font-size:11px;text-align:right">Coût réel SAS</th>
+        <th style="padding:9px 12px;font-size:11px;text-align:right">Facturé (604)</th>
+        <th style="padding:9px 12px;font-size:11px;text-align:right">Écart de marge</th>
+      </tr></thead>
+      <tbody>${recoRows}</tbody>
+      <tfoot><tr style="background:${N};color:white;font-weight:700">
+        <td style="padding:9px 12px;font-size:12px">TOTAL</td><td colspan="3"></td>
+        <td style="padding:9px 12px;font-size:12px;text-align:right">${gf(d.totalCout)}</td>
+        <td style="padding:9px 12px;font-size:12px;text-align:right">${gf(d.totalFacture)}</td>
+        <td style="padding:9px 12px;font-size:13px;text-align:right;color:${C}">${par(d.totalFacture-d.totalCout)}</td>
+      </tr></tfoot>
+    </table>
+    <div style="display:flex;gap:12px;align-items:stretch">
+      <div style="flex:1;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 14px">
+        <div style="font-size:11px;color:#15803D;text-transform:uppercase;letter-spacing:.3px;font-weight:700;margin-bottom:4px">EBITDA économique par centre <span style="font-weight:400;color:#64748B;text-transform:none">(EBITDA comptable corrigé de l'écart de facturation)</span></div>
+        <div style="display:flex;gap:18px;flex-wrap:wrap">
+          ${d.parCentre.map(p=>`<div style="font-size:12px;color:#334155"><b>${p.alias||R.sn(p.name,20)}</b> : ${par(p.ebitdaComptable)} € comptable → <b style="color:${p.ebitdaEco<0?'#B91C1C':'#15803D'}">${par(p.ebitdaEco)} €</b> économique <span style="color:#94A3B8">(${p.ecart>=0?'+':''}${gf(p.ecart)})</span></div>`).join("")}
+          <div style="font-size:12px;color:#334155">Total groupe (inchangé) : <b>${par(d.totalEbitdaEco)} €</b></div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#7C2D12;background:#FFF7ED;border-left:3px solid #B45309;padding:8px 12px;border-radius:4px;line-height:1.45">
+      ⚠️ L'<b>écart de marge par site</b> = facturation interco − coût réel supporté par la SAS pour ce centre. Un écart fortement positif sur un centre et négatif sur l'autre révèle un <b>prix de transfert asymétrique</b> : les EBITDA comptables par entité sont des artefacts — l'<b>EBITDA économique</b> ci-dessus les corrige (le total groupe est inchangé). Répartition mixtes/communes = ${cleLabel} (hypothèse paramétrable).
+    </div>
+  </div>`;
+  return R.slide(R.hdr("Analytique SAS de gestion par site","Coût réel vs facturation interco",n,total),body,slideFooter(n,total));
+}
+
 function buildSInterco(ents, parsedMap, answers, n, total){
   const f = v => v!=null&&!isNaN(v) ? Math.round(v).toLocaleString("fr-FR")+"€" : "N/D";
   const yr = answers.exercice || "N/A";
@@ -11388,29 +11831,36 @@ function buildSInterco(ents, parsedMap, answers, n, total){
     if(_coSym && _coSym.sasEnt){ _symBlock = kpltIntercoSymmetryBlock(kpltIntercoPLSymmetry(ents, parsedMap, _coSym)); }
   } catch(_e){ console.warn("[INTERCO-SYM] échec contrôle symétrie:", _e&&_e.message); }
 
-  // Normalisation pour matching nom <-> entité
-  const norm = s => (s||"").toUpperCase()
-    .replace(/\b(SAS|SARL|EURL|SCI|SELARL|SELAS|DOUBLE\s+J|GROUPE|HOLDING|SA\b)\b/g, " ")
-    .replace(/[^A-Z0-9 ]+/g, " ")
-    .replace(/\s+/g, " ").trim();
-
+  // ★ FIX 26/07 (P0-5) — matching AUXILIAIRE (CompAuxLib) ↔ entité par MOTS-CLÉS DISTINCTIFS + SIGLE,
+  //   jamais par ressemblance du nom complet (« CENTRE MEDICO DENTAIRE DE… » ne matchait rien). Robuste :
+  //   tokens uniques (≥4) + sigle (initiales) + alias override answers.entAlias/siteKeywords + fallback exact.
+  const norm = s => (s||"").toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
+    .replace(/\b(SAS|SASU|SARL|EURL|SCI|SELARL|SELAS|SNC|SCM|GROUPE|HOLDING|SA|ASSOCIATION|CONSULTING|CABINET)\b/g, " ")
+    .replace(/[^A-Z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+  const STOPI = new Set(["CMD","CENTRE","MEDICO","MEDICAL","DENTAIRE","SANTE","DE","DU","LA","LE","LES","DES","ET"]);
+  const _sigleOf = name => { const w=norm(name).split(/\s+/).filter(t=>t && !STOPI.has(t)); return w.map(x=>x[0]).join(""); };
+  let _aliasOvI={}; try{ _aliasOvI=(answers&&answers.entAlias)||{}; }catch(e){}
+  const _entToks = ents.map(e=>({ id:e.id, toks:norm(e.name).split(/\s+/).filter(t=>t.length>=4 && !STOPI.has(t)), sig:_sigleOf(e.name), alias:norm(_aliasOvI[e.id]||"") }));
+  const _freqI={}; _entToks.forEach(a=>a.toks.forEach(t=>_freqI[t]=(_freqI[t]||0)+1));
+  const _entKeys = _entToks.map(a=>({ id:a.id, toks4:a.toks.filter(t=>_freqI[t]===1), sig:a.sig, alias:a.alias }));
+  const _byId = id => ents.find(e=>e.id===id) || null;
   const matchEntity = (name, excludeId) => {
-    const fn = norm(name);
-    if(fn.length < 4) return null;
-    for(const e of ents){
-      if(e.id === excludeId) continue;
-      const en = norm(e.name);
-      if(en.length < 4) continue;
-      // Match si l'un contient l'autre, ou préfixe 8 chars commun
-      if(fn.includes(en) || en.includes(fn)) return e;
-      const enPrefix = en.substring(0, Math.min(8, en.length));
-      const fnPrefix = fn.substring(0, Math.min(8, fn.length));
-      if(enPrefix.length >= 4 && fn.includes(enPrefix)) return e;
-      if(fnPrefix.length >= 4 && en.includes(fnPrefix)) return e;
-    }
+    const fn = norm(name); if(fn.length < 3) return null;
+    const cand = _entKeys.filter(a=>a.id!==excludeId);
+    // 1) token distinctif (≥4) OU alias explicite — substring
+    let hits = cand.filter(a=> (a.alias && a.alias.length>=3 && fn.includes(a.alias)) || a.toks4.some(t=>fn.includes(t)) );
+    if(hits.length===1) return _byId(hits[0].id);
+    // 2) sigle (≥2) présent comme token borné, ou fn est un alias court (≤7) contenant le sigle
+    hits = cand.filter(a=> a.sig && a.sig.length>=2 && ( new RegExp("(^|[^A-Z0-9])"+a.sig+"($|[^A-Z0-9])").test(fn) || (fn.length<=7 && fn.includes(a.sig)) ));
+    if(hits.length===1) return _byId(hits[0].id);
+    // 3) fallback : contenance exacte du nom (noms identiques FEC↔Pappers)
+    for(const e of ents){ if(e.id===excludeId) continue; const en=norm(e.name); if(en.length>=4 && (fn.includes(en)||en.includes(fn))) return e; }
     return null;
   };
 
+  // ★ P0-5 : reliquat interco flaggé mais non rattaché à une entité du groupe → ligne « non ventilé ».
+  let nonVentileFourn = 0, nonVentileCli = 0;
+  const _isIntercoFlag = (entId, name) => { try{ return (typeof kpltIsIntercoFourn==="function") && kpltIsIntercoFourn(entId, name, answers); }catch(e){ return false; } };
   // 1. Matrice côté 401 (dettes fournisseurs)
   const flowsByEnt = {};
   let totalIntercoFourn = 0;
@@ -11424,6 +11874,8 @@ function buildSInterco(ents, parsedMap, answers, n, total){
       if(matched){
         flowsByEnt[eA.id][matched.id] = (flowsByEnt[eA.id][matched.id]||0) + fr.solde;
         totalIntercoFourn += fr.solde;
+      } else if(_isIntercoFlag(eA.id, fr.name)){
+        nonVentileFourn += fr.solde;   // flaggé interco mais auxiliaire non rattachable à une entité
       }
     });
   });
@@ -11440,9 +11892,12 @@ function buildSInterco(ents, parsedMap, answers, n, total){
       if(matched){
         creancesByEnt[eB.id][matched.id] = (creancesByEnt[eB.id][matched.id]||0) + cl.solde;
         totalIntercoCli += cl.solde;
+      } else if(_isIntercoFlag(eB.id, cl.name)){
+        nonVentileCli += cl.solde;
       }
     });
   });
+  const nonVentileTotal = Math.round(nonVentileFourn + nonVentileCli);
 
   // 3. ★ RÉCONCILIATION avec les sélections manuelles modal interco (fournIntercoManuel)
   // Le slide 60 (DPO Retraité) utilise cette source. Si écart avec le matching auto,
@@ -11551,7 +12006,7 @@ function buildSInterco(ents, parsedMap, answers, n, total){
 
   // Matrice
   const matHeader = `<th style="padding:7px 9px;font-size:10px;text-align:left;color:white;background:${N};font-weight:700">↓ Doit / À →</th>` +
-    ents.map(e => `<th style="padding:7px 9px;font-size:10px;text-align:right;color:white;background:${N};font-weight:700">${(e.name||"").substring(0,16)}</th>`).join("") +
+    ents.map(e => `<th style="padding:7px 9px;font-size:10px;text-align:right;color:white;background:${N};font-weight:700">${kpltEntShort(e,16)}</th>`).join("") +
     `<th style="padding:7px 9px;font-size:10px;text-align:right;color:white;background:${N};font-weight:700">Total dû</th>`;
 
   const matRows = ents.map((eA,i) => {
@@ -11563,7 +12018,7 @@ function buildSInterco(ents, parsedMap, answers, n, total){
       return `<td style="padding:7px 9px;font-size:11px;text-align:right;font-weight:700;color:#C2410C;background:${bg}">${f(v)}</td>`;
     }).join("");
     const lineTotal = Object.values(flowsByEnt[eA.id]||{}).reduce((s,v)=>s+v,0);
-    return `<tr><td style="padding:7px 9px;font-size:11px;font-weight:600;color:${N};background:${bg};border-right:2px solid ${C}">${(eA.name||"").substring(0,20)}</td>${cells}<td style="padding:7px 9px;font-size:11px;text-align:right;font-weight:700;color:${N};background:${bg}">${f(lineTotal)}</td></tr>`;
+    return `<tr><td style="padding:7px 9px;font-size:11px;font-weight:600;color:${N};background:${bg};border-right:2px solid ${C}">${kpltEntShort(eA,20)}</td>${cells}<td style="padding:7px 9px;font-size:11px;text-align:right;font-weight:700;color:${N};background:${bg}">${f(lineTotal)}</td></tr>`;
   }).join("");
 
   const colTotalsCells = ents.map(eB => {
@@ -11648,9 +12103,12 @@ function buildSInterco(ents, parsedMap, answers, n, total){
     </table>
   </div>` : `<div style="font-size:11px;color:#64748B;text-align:center;padding:18px;background:#F8FAFC;border-radius:6px;border:1px dashed #CBD5E1">Aucun flux interco détecté — la détection matche les noms d'entités sœurs dans les comptes auxiliaires 401/411. Si tu sais qu'il y a des flux non détectés, vérifie les libellés ou utilise le retraitement manuel sur les Top Fournisseurs.</div>`;
 
+  // ★ P0-5 : ligne « non ventilé » si des flux interco flaggés ne sont pas rattachables à une entité.
+  const nonVentileBlock = nonVentileTotal > 0 ? `<div style="margin-bottom:10px;font-size:11px;color:#78350F;background:#FFFBEB;border-left:3px solid #F59E0B;padding:7px 11px;border-radius:4px">⚠️ <b>Interco non ventilé : ${f(nonVentileTotal)}</b> — flux flaggés interco dont l'auxiliaire (CompAuxLib) n'a pu être rattaché à une entité du groupe. À rapprocher manuellement (aucun matching de noms flou appliqué).</div>` : "";
   const body = `<div style="padding:14px 22px;flex:1;display:flex;flex-direction:column">
     ${kpiBlock}
     ${matrixBlock}
+    ${nonVentileBlock}
     ${manualBlock}
     ${_symBlock}
     ${checksBlock}
@@ -12018,12 +12476,30 @@ function buildSSommaire(slideMap, n, total){
     { cat:"Fournisseurs & Risques", items:[
       {label:"Top Fournisseurs", id:"s_topf"},
       {label:"Balance Âgée", id:"s_balf"},
+      {label:"Synthèse Interco Groupe", id:"s_interco"},
+      {label:"Analytique SAS par site", id:"s_sas_site"},
       {label:"Endettement & Financement", id:"s_dette"},
     ]},
     { cat:"Synthèse", items:[
       {label:"Conclusion Stratégique", id:"s_conclu"},
     ]},
   ];
+  // ★ P0-2 reliquat 26/07 — SOMMAIRE DYNAMIQUE : toute slide RÉELLEMENT présente non listée ci-dessus
+  //   est ajoutée automatiquement (avec son titre) → plus aucune slide absente du sommaire.
+  try{
+    const _listed = new Set(); sections.forEach(s=>s.items.forEach(it=>_listed.add(it.id)));
+    ["pl_","bilan_","ms_","prod_","constca_","chg_","topchg_","fiscal_","s_topf","act_","mc_","s_topf_"].forEach(pfx=>_listed.add(pfx)); // familles couvertes par getN
+    const _titles = (typeof window!=="undefined" && window.__KPLT_SLIDE_TITLES) || {};
+    const _extra = Object.keys(slideMap||{}).filter(id=>{
+      if(_listed.has(id)) return false;
+      // couvert par une famille _first ?
+      if([...(_listed)].some(l=>l.endsWith("_") && id.startsWith(l))) return false;
+      return true;
+    }).sort((a,b)=>(slideMap[a]||0)-(slideMap[b]||0));
+    if(_extra.length){
+      sections.push({ cat:"Autres analyses", items:_extra.map(id=>({ label:(_titles[id]||id), id })) });
+    }
+  }catch(e){}
 
   const getN = id => {
     if(id==="pl_first"){ const k=Object.keys(slideMap).find(x=>x.startsWith("pl_")); return k?slideMap[k]:""; }
@@ -14179,10 +14655,9 @@ function classifyComptesParCentre(parsedEnt, config){
     if(res.stats[centreId]===undefined){ res.stats[centreId]=0; res.montants[centreId]=0; }
     res.stats[centreId]++; res.montants[centreId]+=montant;
     res.comptes.push({cpt,lib:lib.trim(),montant,solde:c.solde||0,centre:centreId,source});
-    // Anomalie informative : 64x salaires globaux non ventilés (MS via SILAE)
-    if(cpt.startsWith("64") && centreId==="commun" && montant>0){
-      res.anomalies.push({cpt,lib:lib.trim(),montant,raison:"Compte 64x (MS) global — ventilé via SILAE, non réparti depuis le FEC"});
-    }
+    // ★ B5 25/07 : le 64x (MS) en « Commun » N'EST PAS une anomalie — la masse salariale est ventilée
+    //   par centre via SILAE (établissement), pas depuis les libellés FEC. La seule vraie anomalie MS
+    //   est « des salariés SILAE restent non affectés » → portée par parseSilaeMulticentres (sansCentre).
   });
   return res;
 }
@@ -14271,13 +14746,23 @@ function parseSilaeMulticentres(silaeRows, config){
     if(lastEmploi&&!sal.emploi) sal.emploi=lastEmploi;
     if(lastEtab&&!sal.etab) sal.etab=lastEtab;
   }
+  // ★ B3 25/07 — mapping établissement SILAE → centre, ÉDITABLE et PERSISTÉ par dossier
+  //   (answers.multicentres.mappingEtabSilae[etabNormalisé]=centreId). Priorité absolue sur le matching
+  //   auto par etablissementSilae. Donne le « moyen d'agir » quand l'auto ne matche pas (fini « 0 sal → c1 »).
+  const _mapEtab = (config && config.mappingEtabSilae) || {};
+  out.etablissementsDetectes = {}; // { etabRaw : {nb, brut, centreId, source} }
   Object.values(byKey).forEach(sal=>{
     if(sal.brut<=0) return;
     out.totaux.brut+=sal.brut; out.totaux.cout+=sal.cout; out.totaux.salaries++;
     const etabN=_mcNorm(sal.etab);
-    const cible=prep.find(c=>c.etabs.some(m=>etabN.includes(m)));
-    const centreId=cible?cible.id:"sansCentre";
-    if(!cible) out.anomalies.push({type:"silae",nom:sal.nom||sal.mat,raison:"Salarié sans correspondance centre (établissement « "+(sal.etab||"vide")+" »)",brut:Math.round(sal.brut)});
+    let centreId, source;
+    if(_mapEtab[etabN] && (_mapEtab[etabN]==="sansCentre" || prep.some(c=>c.id===_mapEtab[etabN]))){ centreId=_mapEtab[etabN]; source="mapping"; }
+    else { const cible=prep.find(c=>c.etabs.some(m=>etabN.includes(m))); centreId=cible?cible.id:"sansCentre"; source=cible?"auto":"aucun"; }
+    // trace des établissements détectés (pour l'UI d'affectation en masse)
+    const ek = sal.etab || "(vide)";
+    if(!out.etablissementsDetectes[ek]) out.etablissementsDetectes[ek]={nb:0,brut:0,centreId,source,etabN};
+    out.etablissementsDetectes[ek].nb++; out.etablissementsDetectes[ek].brut+=sal.brut; out.etablissementsDetectes[ek].centreId=centreId; out.etablissementsDetectes[ek].source=source;
+    if(centreId==="sansCentre") out.anomalies.push({type:"silae",nom:sal.nom||sal.mat,raison:"Salarié sans correspondance centre (établissement « "+(sal.etab||"vide")+" ») — affectez l'établissement à un centre",brut:Math.round(sal.brut)});
     if(!sal.emploi) out.anomalies.push({type:"silae",nom:sal.nom||sal.mat,raison:"Salarié sans emploi renseigné — classé admin par défaut",brut:Math.round(sal.brut)});
     // ★ FIX 25/05 Patch K-bis : exclusion explicite des faux positifs (« assistante DENTAIRE » matchait « dentiste »)
     const empNorm = _mcNorm(sal.emploi || '');
@@ -14374,7 +14859,21 @@ function computePnLParCentre(parsedEnt, classification, silae, config){
     else if(centre==="commun") commun[bucket]+=montant;
   });
   const totalCA=ids.reduce((s,id)=>s+out.centres[id].CA,0);
-  const caShare=id=> totalCA>0 ? (out.centres[id].CA/totalCA) : (1/ids.length);
+  // ★ FIX 24/07 GARDE-FOU A4 : sur CA nul, PAS de 50/50 silencieux. On cherche une clé explicite
+  //   (effectifs SILAE, m², manuelle) ; à défaut on RÉPARTIT à parts égales mais on FLAGUE l'anomalie
+  //   (la génération est de toute façon bloquée en amont par kpltValidateMulticentres).
+  let _shareFn;
+  if(totalCA>0){ _shareFn = id => out.centres[id].CA/totalCA; }
+  else {
+    const cleCommun = (config && (config.cleCommun || config.cleCommunFallback)) || null;
+    // clé effectifs SILAE si disponible
+    let effTot=0; const effBy={};
+    try{ ids.forEach(id=>{ const p=silae&&silae.parCentre&&silae.parCentre[id]; const nb=(p&&p.total&&p.total.nb)||0; effBy[id]=nb; effTot+=nb; }); }catch(e){}
+    if(cleCommun==="effectifs" && effTot>0){ _shareFn = id => (effBy[id]||0)/effTot; out.anomalies.push({type:"pnl",raison:"CA nul → charges communes réparties par EFFECTIFS SILAE (clé explicite)."}); }
+    else if(cleCommun==="manuel" && config.repartCommunManuel){ const m=config.repartCommunManuel; const mt=ids.reduce((s,id)=>s+(+m[id]||0),0)||1; _shareFn = id => (+m[id]||0)/mt; out.anomalies.push({type:"pnl",raison:"CA nul → charges communes réparties par clé MANUELLE."}); }
+    else { _shareFn = id => 1/ids.length; out.anomalies.push({type:"blocage",raison:"CA des centres = 0 : clé « prorata CA » inutilisable. Répartition à parts égales appliquée FAUTE DE CLÉ EXPLICITE — à corriger (effectifs / m² / manuelle) avant toute lecture."}); }
+  }
+  const caShare=id=> _shareFn(id);
 
   // ── ÉTAPES 3-4 : Charges par centre (6x), hors 64x (MS via SILAE) ──
   const seen=new Set();
@@ -14489,6 +14988,183 @@ function computeMulticentresAll(ents, parsedMap, parsedSILAE, answers){
   const silae = parseSilaeMulticentres(rawRows, cfg);
   const pnl = computePnLParCentre(parsedEnt, classification, silae, cfg);
   return { config:cfg, entId, ent, parsedEnt, classification, silae, pnl };
+}
+
+// ★ FIX 24/07 — GARDE-FOUS MULTI-CENTRES (batch A) : empêche un rapport « par centre » faux.
+//   Générique, aucun SIREN/nom/montant en dur. Renvoie :
+//     shouldRun : le module doit-il produire des slides ? (actif ET ≥2 centres nommés)
+//     valid     : la ventilation est-elle exploitable ? (sinon slides OMISES, génération bloquée)
+//     reasons[] : motifs de blocage en langage humain (affichés à l'utilisateur)
+// ★ FIX 25/07 — détecte l'ID de l'entité « structure de gestion » (SAS). Priorité : désignation
+//   utilisateur (answers.multicentres.sasEntId / nomSas) puis heuristiques calcConso. Générique.
+function kpltDetectSasEntId(ents, parsedMap, answers){
+  try{
+    const cfg=(answers&&answers.multicentres)||{};
+    if(cfg.sasEntId && (ents||[]).some(e=>e.id===cfg.sasEntId)) return cfg.sasEntId;
+    const co=calcConso(ents, parsedMap, answers); if(co && co.sasEnt) return co.sasEnt.id;
+  }catch(e){}
+  return null;
+}
+// ★ FIX 25/07 — défaut intelligent du mode : plusieurs FEC exploitants + une entité de gestion → mode « groupe ».
+function kpltSuggestMulticentresMode(ents, parsedMap, answers){
+  try{
+    const sasId=kpltDetectSasEntId(ents, parsedMap, answers);
+    const exploitants=(ents||[]).filter(e=>e.id!==sasId && ((parsedMap[e.id]&&parsedMap[e.id].CA)>0));
+    if(sasId && exploitants.length>=2) return "groupe";
+  }catch(e){}
+  return "intra";
+}
+function kpltValidateMulticentres(ents, parsedMap, parsedSILAE, answers){
+  const out = { shouldRun:false, valid:false, reasons:[], mcData:null, stats:{}, mode:null };
+  const cfg = answers && answers.multicentres;
+  if(!cfg || !cfg.active) return out;                                  // A1 : jamais par défaut
+  const mode = cfg.mode || "intra"; out.mode = mode;
+  const R = (code,label,text)=>({code,label,text});                    // motif structuré → bouton d'action
+
+  if(mode === "groupe"){
+    // ★ MODE B — « 1 entité = 1 centre » : chaque entité exploitante = centre (CA/charges/SILAE à 100%,
+    //   automatiquement, aucune classification manuelle). Seule la SAS de gestion passe par la ventilation
+    //   (slide analytique SAS). Garde-fou : CA de chaque entité exploitante non nul.
+    const sasId = kpltDetectSasEntId(ents, parsedMap, answers);
+    const exploitants = (ents||[]).filter(e => e.id !== sasId);
+    out.stats.sasId = sasId; out.stats.nbExploitants = exploitants.length;
+    if(exploitants.length < 2) return out;                            // besoin d'au moins 2 centres = 2 entités
+    out.shouldRun = true;
+    const caZero = exploitants.filter(e => !(((parsedMap[e.id]||{}).CA)>0));
+    if(caZero.length) out.reasons.push(R("centres","Vérifier les FEC des entités",
+      caZero.map(e=>e.name||e.id).join(", ")+" : CA = 0 (FEC manquant ou vide). En mode « 1 entité = 1 centre », chaque entité exploitante doit avoir un CA."));
+    out.stats.caParCentre = exploitants.map(e=>({ id:e.id, name:e.name, ca:Math.round(((parsedMap[e.id]||{}).CA)||0) }));
+    out.valid = out.reasons.length === 0;                            // pas de dead-end : CA entité ≠ 0 ⇒ valide
+    return out;
+  }
+
+  // ── MODE A (intra-entité) — détection par intitulés dans le FEC d'UNE entité ──
+  const centres = Array.isArray(cfg.centres) ? cfg.centres.filter(c=>c && c.id && String(c.label||"").trim().length>=1) : [];
+  if(centres.length < 2) return out;                                   // A1 : ≥2 centres NOMMÉS requis
+  out.shouldRun = true;
+  let mc=null;
+  try { mc = computeMulticentresAll(ents, parsedMap, parsedSILAE, answers); } catch(e){ out.reasons.push(R("data","Recharger le FEC","Erreur de calcul de la ventilation ("+(e&&e.message||"inconnue")+").")); return out; }
+  if(!mc){ out.reasons.push(R("data","Recharger le FEC","Données insuffisantes pour ventiler (entité porteuse ou FEC introuvable).")); return out; }
+  out.mcData = mc;
+  // A2-a : CA affecté aux centres = 0 → blocage
+  const caAffecte = (mc.pnl && mc.pnl.totaux && mc.pnl.totaux.CA) || 0;
+  out.stats.caAffecte = Math.round(caAffecte);
+  if(caAffecte <= 0) out.reasons.push(R("centres","Configurer les centres / mots-clés",
+    "Aucun chiffre d'affaires n'est affecté aux centres (les intitulés de comptes 70x ne matchent aucun centre). Vérifiez les mots-clés de libellé de chaque centre — ou basculez en mode « 1 entité = 1 centre »."));
+  // A2-b : 0 salarié SILAE rattaché à un centre nommé → blocage
+  const nbRattaches = centres.reduce((s,c)=>{ const p=mc.silae&&mc.silae.parCentre&&mc.silae.parCentre[c.id]; return s + ((p&&p.total&&p.total.nb)||0); }, 0);
+  const nbSansCentre = (mc.silae && mc.silae.parCentre && mc.silae.parCentre.sansCentre && mc.silae.parCentre.sansCentre.total && mc.silae.parCentre.sansCentre.total.nb) || 0;
+  out.stats.nbRattaches = nbRattaches; out.stats.nbSansCentre = nbSansCentre;
+  if(nbRattaches <= 0) out.reasons.push(R("silae","Affecter les "+(nbSansCentre||"")+" salariés SILAE",
+    "Aucun salarié SILAE n'est rattaché à un centre"+(nbSansCentre>0?" ("+nbSansCentre+" salarié(s) non affecté(s))":"")+". Renseignez le mapping établissement SILAE → centre."));
+  // A2-c : >50 % des charges en « Commun » sans validation explicite → blocage
+  // ★ FIX 25/07 (bug 3) : % = charges_commun / charges_TOTALES de l'entité, BORNÉ 0-100, dénominateur non nul.
+  let communCharges=0, totalCharges=0;
+  (mc.classification && mc.classification.comptes || []).forEach(c=>{ if(String(c.cpt||"").startsWith("6")){ const m=Math.abs(c.montant||0); totalCharges+=m; if(c.centre==="commun") communCharges+=m; } });
+  const communPct = totalCharges>0 ? Math.max(0, Math.min(1, communCharges/totalCharges)) : 0;
+  out.stats.communPct = +(communPct*100).toFixed(1);
+  if(totalCharges>0 && communPct>0.5 && cfg.communValide!==true){
+    out.reasons.push(R("commun","Revoir la classification des comptes",
+      Math.round(communPct*100)+" % des charges ("+Math.round(communCharges).toLocaleString("fr-FR")+" €) tombent en « Commun » (réparties par clé) sans validation explicite. Affectez davantage de comptes à un centre, ou validez la répartition."));
+  }
+  // A2-d / A4 : clé « prorata CA » impossible sur CA nul → exiger une clé explicite
+  if((cfg.strategieCommun||"prorataCA")==="prorataCA" && caAffecte<=0 && communCharges>0){
+    out.reasons.push(R("cle","Choisir une clé de répartition",
+      "La clé « prorata CA » est inutilisable (CA des centres = 0). Choisissez une clé explicite (effectifs, m², manuelle) pour répartir les charges communes — pas de 50/50 silencieux."));
+  }
+  out.valid = out.reasons.length === 0;
+  return out;
+}
+
+// Slide unique de remplacement quand la ventilation multi-centres est active mais invalide (A3).
+function buildSMulticentresNonConfig(reasons, n, total){
+  const items = (reasons||[]).map(r=>`<li style="margin-bottom:8px;line-height:1.5">${String((r&&r.text)||r).replace(/</g,"&lt;")}</li>`).join("");
+  const body = `<div style="flex:1;display:flex;flex-direction:column;justify-content:center;max-width:820px;margin:0 auto">
+    <div style="font-size:44px;margin-bottom:10px">🧭</div>
+    <div style="font-size:22px;font-weight:800;color:#0A1E6E;margin-bottom:6px">Ventilation par centre — non configurée</div>
+    <div style="font-size:13px;color:#475569;margin-bottom:16px;line-height:1.6">La ventilation analytique multi-centres est activée mais n'est pas exploitable en l'état. Les slides « par centre » ont été <b>volontairement omises</b> pour ne pas afficher de montants à 0 € / —%. Points à corriger :</div>
+    <ul style="font-size:13px;color:#7C2D12;background:#FFF7ED;border-left:4px solid #F59E0B;padding:14px 18px 14px 34px;border-radius:6px">${items||"<li>Configuration incomplète.</li>"}</ul>
+    <div style="font-size:12px;color:#64748B;margin-top:16px;line-height:1.5">Corrigez ces points dans le questionnaire (centres, mots-clés de libellé, mapping SILAE, clé de répartition) puis relancez la génération. Le reste du rapport (vue consolidée juridique) reste fiable.</div>
+  </div>`;
+  return R.slide(R.hdr("Ventilation par centre","Configuration requise",n,total),body,slideFooter(n,total));
+}
+
+// Dialogue bloquant de pré-génération (A2) : liste les motifs, empêche de générer un rapport faux.
+// ★ FIX 25/07 (bug 2) — FIN DE L'IMPASSE : chaque motif a un BOUTON D'ACTION qui ouvre l'écran de
+//   correction (classification, affectation salariés, centres/mots-clés, clé). Plus de « J'ai compris »
+//   seul. onAction(code) est fourni par l'appelant (navigation / ouverture de modale + retry).
+function kpltShowMulticentresBlock(reasons, onAction){
+  const old=document.getElementById("kplt-mc-block"); if(old) old.remove();
+  const rs=(reasons||[]).map(r=> (typeof r==="string") ? {code:null,label:null,text:r} : r );
+  const items=rs.map((r,i)=>`<li style="margin-bottom:12px;line-height:1.5">
+      <div style="color:#7C2D12">${String(r.text||"").replace(/</g,"&lt;")}</div>
+      ${r.label?`<button class="kplt-mc-act" data-code="${r.code||""}" data-idx="${i}" style="margin-top:6px;background:#0A1E6E;color:white;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:11.5px;font-weight:700">→ ${String(r.label).replace(/</g,"&lt;")}</button>`:""}
+    </li>`).join("");
+  const ov=document.createElement("div");
+  ov.id="kplt-mc-block";
+  ov.style.cssText="position:fixed;inset:0;background:rgba(10,30,110,0.7);z-index:100001;display:flex;align-items:center;justify-content:center;font-family:Montserrat,sans-serif";
+  ov.innerHTML=`<div style="background:white;border-radius:12px;max-width:660px;width:92%;box-shadow:0 24px 60px rgba(0,0,0,0.4);overflow:hidden">
+    <div style="background:#B91C1C;color:white;padding:14px 22px;font-weight:700;font-size:15px">⛔ Génération bloquée — ventilation multi-centres à corriger</div>
+    <div style="padding:18px 22px">
+      <div style="font-size:13px;color:#334155;margin-bottom:12px;line-height:1.55">Générer maintenant produirait des pages « par centre » fausses (0 € / —%). Corrigez chaque point (un chemin de correction est proposé pour chacun) :</div>
+      <ul style="font-size:13px;background:#FEF2F2;border-left:4px solid #B91C1C;padding:14px 18px 14px 34px;border-radius:6px;margin:0;list-style:disc">${items}</ul>
+      <div style="font-size:12px;color:#64748B;margin-top:14px;line-height:1.5">Vous pouvez aussi <b>basculer en mode « 1 entité = 1 centre »</b> ou <b>désactiver le module multi-centres</b> dans le questionnaire.</div>
+    </div>
+    <div style="padding:14px 22px;background:#F8FAFC;border-top:1px solid #E5E7EB;display:flex;gap:8px;justify-content:flex-end">
+      <button id="kplt-mc-block-quest" style="background:white;color:#0A1E6E;border:1.5px solid #CBD5E1;padding:9px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">Ouvrir le questionnaire multi-centres</button>
+      <button id="kplt-mc-block-close" style="background:#E2E8F0;color:#475569;border:none;padding:9px 18px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700">Fermer</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  const done=()=>{ ov.remove(); };
+  document.getElementById("kplt-mc-block-close").addEventListener("click",done);
+  document.getElementById("kplt-mc-block-quest").addEventListener("click",()=>{ done(); if(typeof onAction==="function") onAction("centres"); });
+  ov.querySelectorAll(".kplt-mc-act").forEach(b=>b.addEventListener("click",()=>{ const code=b.dataset.code; done(); if(typeof onAction==="function") onAction(code); }));
+}
+
+// ★ P0-1.2/3 — CONTRÔLE D'INTÉGRITÉ CDR ↔ BILAN, deux étages, par entité.
+//   (b) RN CDR = résultat de la période au bilan (au centime) → HARD block (toujours un bug mapping/parse).
+//   (a) FEC équilibré (Σ débits = Σ crédits) → SOFT block (vrai FEC déséquilibré possible sur export partiel)
+//   avec option « générer en connaissance de cause » (bandeau visible + override persisté).
+function kpltControleIntegriteBilan(ents, parsedMap, answers){
+  const out={ hard:[], soft:[] };
+  (ents||[]).forEach(e=>{ const p=parsedMap&&parsedMap[e.id]; if(!p||!Array.isArray(p.comptesList)||!p.comptesList.length) return;
+    // (b)
+    let rnCDR=null; try{ rnCDR=kpltComputePnlN1N2(e,p,answers).rn; }catch(err){}
+    const rp=(typeof p.resultatPeriode==="number")?p.resultatPeriode:(typeof p.RN==="number"?p.RN:null);
+    if(rnCDR!=null && rp!=null && Math.abs(rnCDR-rp)>=0.02){
+      out.hard.push({ id:e.id, name:e.name, rnCDR:Math.round(rnCDR*100)/100, resultatPeriode:rp, ecart:Math.round((rnCDR-rp)*100)/100 });
+    }
+    // (a)
+    if(p.fecEquilibre===false){
+      out.soft.push({ id:e.id, name:e.name, ecart:p.fecEcartEquilibre||0 });
+    }
+  });
+  return out;
+}
+function kpltShowIntegriteBlock(ctrl, onOverride){
+  const old=document.getElementById("kplt-int-block"); if(old) old.remove();
+  const hard=ctrl.hard||[], soft=ctrl.soft||[];
+  const gfm=v=>Math.round(v).toLocaleString("fr-FR");
+  const hardHtml=hard.length?`<div style="margin-bottom:10px"><b style="color:#B91C1C">Écart RN CDR ≠ résultat de la période (bug de mapping — blocage) :</b><ul style="margin:6px 0 0;padding-left:22px">${hard.map(h=>`<li style="font-size:12.5px;color:#7C2D12">${(h.name||h.id)} : CDR ${gfm(h.rnCDR)} € vs bilan ${gfm(h.resultatPeriode)} € (écart ${gfm(h.ecart)} €)</li>`).join("")}</ul></div>`:"";
+  const softHtml=soft.length?`<div style="margin-bottom:10px"><b style="color:#B45309">FEC déséquilibré (Σ débits ≠ Σ crédits) :</b><ul style="margin:6px 0 0;padding-left:22px">${soft.map(s=>`<li style="font-size:12.5px;color:#78350F">${(s.name||s.id)} : écart ${gfm(s.ecart)} €</li>`).join("")}</ul></div>`:"";
+  const ov=document.createElement("div"); ov.id="kplt-int-block";
+  ov.style.cssText="position:fixed;inset:0;background:rgba(10,30,110,0.72);z-index:100002;display:flex;align-items:center;justify-content:center;font-family:Montserrat,sans-serif";
+  const canOverride = hard.length===0 && soft.length>0;   // override possible UNIQUEMENT si pas de hard block
+  ov.innerHTML=`<div style="background:white;border-radius:12px;max-width:660px;width:92%;box-shadow:0 24px 60px rgba(0,0,0,0.4);overflow:hidden">
+    <div style="background:${hard.length?'#B91C1C':'#B45309'};color:white;padding:14px 22px;font-weight:700;font-size:15px">${hard.length?'⛔ Génération bloquée — intégrité CDR ↔ bilan':'⚠️ FEC déséquilibré — chiffres à fiabiliser'}</div>
+    <div style="padding:18px 22px;font-size:13px;color:#334155;line-height:1.55">
+      ${hardHtml}${softHtml}
+      ${hard.length?`<div style="font-size:12px;color:#64748B">Un écart RN CDR ≠ résultat de la période est TOUJOURS un bug de mapping/parse — corrigez le mapping des comptes avant de générer.</div>`:`<div style="font-size:12px;color:#64748B">Le FEC ne s'équilibre pas (export partiel ?). Vous pouvez générer « en connaissance de cause » : un bandeau d'avertissement sera imprimé sur la page de garde et le CDR.</div>`}
+    </div>
+    <div style="padding:14px 22px;background:#F8FAFC;border-top:1px solid #E5E7EB;display:flex;gap:8px;justify-content:flex-end">
+      <button id="kplt-int-close" style="background:#E2E8F0;color:#475569;border:none;padding:9px 18px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700">Fermer</button>
+      ${canOverride?`<button id="kplt-int-override" style="background:#B45309;color:white;border:none;padding:9px 18px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700">Générer en connaissance de cause</button>`:""}
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  document.getElementById("kplt-int-close").addEventListener("click",()=>ov.remove());
+  const ob=document.getElementById("kplt-int-override"); if(ob) ob.addEventListener("click",()=>{ ov.remove(); if(typeof onOverride==="function") onOverride(); });
 }
 
 // ── Slides M1-M4 ────────────────────────────────────────────────────────────
@@ -14671,6 +15347,7 @@ function buildJSSlides(ents, parsedMap, parsedSILAE, answers){
   const co = calcConso(ents, parsedMap, answers);
   const assoEnts = co.assoEnts;
   const sasEnt = co.sasEnt;
+  try{ kpltAssignAliases(ents, answers); }catch(e){ console.warn("[KPLT_ALIAS] échec:", e&&e.message); } // ★ P1-8 : alias courts uniques
 
   // Phase 1 : construire toutes les slides avec pagination temporaire 0/0
   const raw = [];
@@ -14688,10 +15365,18 @@ function buildJSSlides(ents, parsedMap, parsedSILAE, answers){
   add("s2", buildS2Contexte(ents, answers, 99999, 99998));
   add("s3", buildS3KPIs(ents, parsedMap, parsedSILAE, answers, null, 99999, 99998));
   add("s_act", buildSActivite(ents, parsedMap, answers, 99999, 99998));
+  // ★ FIX 24/07 GARDE-FOUS MULTI-CENTRES (batch A) — validation UNIQUE consommée par toutes les slides
+  //   « par centre ». shouldRun=false (mono-site / <2 centres) → aucune slide. shouldRun && !valid →
+  //   slides OMISES + UNE page « ventilation non configurée » (A3), jamais des slides à 0 €/—%.
+  const _mcVal = kpltValidateMulticentres(ents, parsedMap, parsedSILAE, answers);
+  if(_mcVal.shouldRun && !_mcVal.valid){
+    console.warn("[KPLT_MC] Ventilation invalide → slides par centre OMISES. Motifs :", (_mcVal.reasons||[]).map(r=>(r&&r.text)||r));
+    add("mc_nonconfig", buildSMulticentresNonConfig(_mcVal.reasons, 99999, 99998));
+  }
   // ★ FIX 27/05 Patch L0 v5 transverse : slides "Activité Mensuelle — <Centre>" (1 par centre, juste après l'activité conso).
   //   Granularité : écritures 70x du FEC filtrées par libellePatterns du centre + exclusion sasMarkers (cohérent classifyComptesParCentre).
   //   100% data réelle (aucun chiffre estimé). Skip silencieusement si CA centre = 0 (centre non-actif sur l'année).
-  if(answers.multicentres && answers.multicentres.active && Array.isArray(answers.multicentres.centres) && answers.multicentres.centres.length >= 2){
+  if(_mcVal.shouldRun && _mcVal.valid && (_mcVal.mode||"intra")==="intra"){
     try {
       const _mcCfg = answers.multicentres;
       // Identifier l'entité asso (porteuse des centres). computeMulticentresAll gère le fallback ; on réutilise.
@@ -14737,9 +15422,10 @@ function buildJSSlides(ents, parsedMap, parsedSILAE, answers){
   assoEnts.forEach(e => add("pl_"+e.id, buildS5PL(e, parsedMap[e.id], answers, 99999, 99998, false)));
   if(sasEnt) add("pl_sas", buildS5PL(sasEnt, parsedMap[sasEnt.id], answers, 99999, 99998, true));
   // ★ PATCH J 24/05 — Slides Multi-centres analytique (après P&L par entité, si module activé)
-  if(answers.multicentres && answers.multicentres.active){
+  //   ★ FIX 24/07 (batch A) : gaté sur la validation unique (_mcVal) — omises si invalide (placeholder déjà ajouté).
+  if(_mcVal.shouldRun && _mcVal.valid && (_mcVal.mode||"intra")==="intra"){
     try{
-      const mcData = computeMulticentresAll(ents, parsedMap, parsedSILAE, answers);
+      const mcData = _mcVal.mcData || computeMulticentresAll(ents, parsedMap, parsedSILAE, answers);
       if(mcData){
         // ★ FIX 25/05 Patch L0 : transmettre l'EBITDA consolidé JURIDIQUE (co) pour l'encart « lecture analytique » des slides M1/M2 — calculé, jamais hardcodé.
         mcData.consoJuridique = { EBITDA: co.cEBITDA||0, CA: co.cCA||0 };
@@ -14877,6 +15563,10 @@ function buildJSSlides(ents, parsedMap, parsedSILAE, answers){
     const intercoHtml = buildSInterco(ents, parsedMap, answers, 99999, 99998);
     if(intercoHtml && intercoHtml.trim().length > 50) add("s_interco", intercoHtml);
   }
+  // ★ FIX 25/07 C4 — Analytique SAS de gestion par site (parcours groupe avec SAS + ≥2 centres/assos).
+  if(co.sasEnt && Array.isArray(co.assoEnts) && co.assoEnts.length >= 2){
+    safeAdd("s_sas_site", ()=>buildSAnalytiqueSasParSite(ents, parsedMap, co, 99999, 99998));
+  }
   add("s_balf", buildSBalance(ents, parsedMap, "fourn", 99999, 99998));
   add("s_balc", buildSBalance(ents, parsedMap, "clients", 99999, 99998));
   add("s_dette", buildSEndettement(ents, parsedMap, answers, co, 99999, 99998));
@@ -14892,6 +15582,9 @@ function buildJSSlides(ents, parsedMap, parsedSILAE, answers){
   // 2a. Calculer le mapping id → numéro de slide (en tenant compte du Sommaire qui sera inséré en position 1)
   const slideMap = {};
   raw.forEach((s,i) => { slideMap[s.id] = i + 2; }); // +2 car le Sommaire sera en position 2 (après cover en 1)
+  // ★ P0-2 reliquat : titres de slides (extraits de l'en-tête R.hdr) pour le sommaire dynamique.
+  try{ window.__KPLT_SLIDE_TITLES = window.__KPLT_SLIDE_TITLES || {};
+    raw.forEach(s=>{ const m=(s.html||"").match(/color:white;font-size:[^"]*">([^<]{2,70})<\/span>/); if(m && m[1]) window.__KPLT_SLIDE_TITLES[s.id]=m[1].trim(); }); }catch(e){}
   // Le Sommaire lui-même sera la slide 2
   const sommaireHtml = buildSSommaire(slideMap, 2, raw.length + 1);
   // Insérer le Sommaire après le cover (position 1)
@@ -15088,7 +15781,7 @@ function buildUserPrompt(){
       lines.push("  SPLIT CA : "+(has7061?"Comptes 706x distincts — utiliser ci-dessus":"NON DISPONIBLE"));
 
       // Conso 602 exact (seul compte 6x n?cessaire en d?tail)
-      const conso602=(p.comptesList||[]).filter(c=>c.cpt.startsWith("602")).reduce((s,c)=>s+Math.abs(c.solde),0);
+      const conso602=(p.comptesList||[]).filter(c=>c.cpt.startsWith("602")).reduce((s,c)=>s+(c.solde||0),0); // ★ P0-4 : NET des avoirs (un seul périmètre)
       if(conso602===0) lines.push("⚠️ 602 ABSENT — ratio consommables = N/D");
 
       lines.push("=== COMPTES BILAN DÉTAILLÉS (1x-5x) ===");
@@ -15451,7 +16144,39 @@ function buildUserPrompt(){
 // ??????????????????????????????????????????
 // RENDER
 // ??????????????????????????????????????????
+// ★ FIX 24/07 transverse — PRÉSERVATION FOCUS + CARET sur re-render (générique, tous champs).
+//   Cause du bug SIRET/SIREN : un handler input appelait render() → innerHTML reconstruit →
+//   l'<input> focalisé est détruit/recréé → focus + curseur perdus à chaque frappe. Filet de
+//   sécurité générique : on mémorise le champ actif (sélecteur stable classe+data-*, ou #id) et
+//   la position du curseur AVANT le re-render, puis on restaure focus + setSelectionRange APRÈS.
+//   S'ajoute au correctif principal (ne pas re-rendre pendant la frappe — voir siren-inp debounce).
+function _kpltCaptureFocus(){
+  const el=document.activeElement;
+  if(!el||!el.tagName||!/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return null;
+  const esc=v=>(window.CSS&&CSS.escape)?CSS.escape(String(v)):String(v);
+  let sel=null;
+  if(el.id){ sel="#"+esc(el.id); }
+  else {
+    sel=el.tagName.toLowerCase();
+    el.classList.forEach(c=>{ sel+="."+esc(c); });
+    for(const a of el.attributes){ if(a.name.indexOf("data-")===0){ sel+='['+a.name+'="'+esc(a.value)+'"]'; } }
+  }
+  let s=null,e2=null;
+  try{ s=el.selectionStart; e2=el.selectionEnd; }catch(_){}
+  return {sel,s,e:e2};
+}
+function _kpltRestoreFocus(cap){
+  if(!cap||!cap.sel) return;
+  try{
+    const el=document.querySelector(cap.sel);
+    if(el && document.activeElement!==el){
+      el.focus({preventScroll:true});
+      if(cap.s!=null && el.setSelectionRange){ try{ el.setSelectionRange(cap.s,cap.e); }catch(_){} }
+    }
+  }catch(_){}
+}
 function render(){
+  const _foc=_kpltCaptureFocus();   // ★ mémoriser le champ focalisé avant reconstruction
   renderStepper();
   const c=document.getElementById("content");
   if(ST.step===0)c.innerHTML=renderStep0();
@@ -15462,6 +16187,7 @@ function render(){
   else if(ST.step===5)c.innerHTML=renderLoading();
   else if(ST.step===6){renderStep5();return;}
   bindEvents();
+  _kpltRestoreFocus(_foc);          // ★ restaurer focus + curseur après re-render
 }
 
 function renderStepper(){
@@ -15660,8 +16386,8 @@ function renderStep2(){
           <table style="width:100%;border-collapse:collapse">
             ${rowG("Capital (101-105)",gf(p.capitalB))}
             ${rowG("Réserves (106-107)",gf(p.reservesB))}
-            ${rowG("Report à nouveau (11x)",gf(p.rAnB))}
-            ${rowG("Résultat (12x)",gf(p.rnBilan))}
+            ${rowG("Report à nouveau & résultat en instance",gf(p.reportEtInstance!=null?p.reportEtInstance:p.rAnB))}
+            ${rowG("Résultat de la période",gf(p.resultatPeriode!=null?p.resultatPeriode:p.rnBilan))}
             ${rowG("Subventions (13x)",gf(p.subvB))}
             ${rowG("→ Capitaux propres",gf(p.cpTot))}
             ${rowG("Provisions (15x)",gf(p.provB))}
@@ -15801,6 +16527,9 @@ function renderStep3(){
 
     ${((a.schema||"").includes("asso"))?(()=>{
       const mc=a.multicentres||{active:false,centres:[],strategieCommun:"prorataCA",regexPraticiens:""};
+      // ★ FIX 25/07 — mode : « intra » (centres dans un même FEC) vs « groupe » (1 entité = 1 centre).
+      //   Défaut intelligent au 1er affichage (plusieurs FEC exploitants + une SAS → groupe).
+      const _mcMode = mc.mode || (typeof kpltSuggestMulticentresMode==="function"?kpltSuggestMulticentresMode(ST.ents,ST.parsed,a):"intra");
       const colorOpts=[["#0A1E6E","Navy"],["#0EA5E9","Bleu ciel"],["#00C2CB","Cyan"],["#6366F1","Indigo"],["#22C55E","Vert"],["#F59E0B","Orange"]];
       const entOpts=ST.ents.map(e=>`<option value="${e.id}" ${mc.entId===e.id?"selected":""}>${(e.name||e.id)}</option>`).join("");
       const centresHtml=(mc.active?(mc.centres||[]):[]).map((c,i)=>`
@@ -15831,12 +16560,28 @@ function renderStep3(){
         </div>
         ${mc.active?`
           <div class="q-block">
+            <span class="q-label">Mode de ventilation</span>
+            <div class="q-options">
+              <span class="q-opt ${_mcMode==="intra"?"sel":""}" data-mc-mode="intra">Centres au sein d'une même entité <span style="opacity:.6">(détection par intitulés FEC)</span></span>
+              <span class="q-opt ${_mcMode==="groupe"?"sel":""}" data-mc-mode="groupe">1 entité = 1 centre <span style="opacity:.6">(groupe multi-FEC)</span></span>
+            </div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:4px">${_mcMode==="groupe"?"Chaque FEC d'entité exploitante = un centre à 100% (CA, charges, salariés SILAE) — aucune classification manuelle. Seule la structure de gestion (SAS) est ventilée par site.":"Une seule entité porte plusieurs centres, distingués par les libellés/sous-comptes du FEC."}</div>
+          </div>
+          ${_mcMode==="groupe"?`
+            <div class="q-block">
+              <div style="background:rgba(0,194,203,0.08);border:1px solid rgba(0,194,203,0.25);border-radius:8px;padding:10px 14px;font-size:12px;color:rgba(255,255,255,0.85);line-height:1.6">
+                🏢 <b>Mode « 1 entité = 1 centre »</b> — chaque entité exploitante devient un centre automatiquement. Aucune classification de comptes ni d'établissement à faire.
+                <div style="margin-top:6px;font-size:11px;color:rgba(255,255,255,0.55)">La structure de gestion (SAS) est détectée automatiquement ; ses charges sont ventilées par site (directes / mixtes / communes) et rapprochées de la facturation interco dans la slide « Analytique SAS par site ».</div>
+              </div>
+            </div>
+          `:`
+          <div class="q-block">
             <label class="lbl">Entité (association) concernée</label>
             <select class="inp" id="mc-entid" style="max-width:320px">${entOpts}</select>
           </div>
           ${warnHtml}
           ${centresHtml}
-          <button type="button" id="mc-add-centre" class="btn-g btn-sm" style="margin-bottom:14px">+ Ajouter un centre</button>
+          <button type="button" id="mc-add-centre" class="btn-g btn-sm" style="margin-bottom:14px">+ Ajouter un centre</button>`}
           <div class="q-block">
             <span class="q-label">Traitement des charges non identifiables (communes)</span>
             <div class="q-options">
@@ -20942,6 +21687,111 @@ function saveTagMapping(){
   }catch(e){ console.warn("[KPLT_MAPPING] save échec", e); }
 }
 
+// ════════════════════════════════════════════════════════════════════════════════════════════
+// ★ D 25/07 — PERSISTANCE UNIFIÉE DE LA CONFIG DOSSIER (toutes les décisions, par dossier).
+//   Un seul objet kplt_dossier_{clé} regroupe les décisions qui ne sont pas déjà couvertes par
+//   kplt_mapping_ (tags) et kplt_retrait_ (coches retraitements) : mappings multi-centres, mapping
+//   N1/N2, fournisseurs dirigeant cochés, clés de répartition, bascule 631, + un SNAPSHOT des comptes/
+//   fournisseurs/établissements connus pour marquer « nouveau » les éléments apparus après un rechargement
+//   de FEC plus long (5→7 mois). Les règles sont ré-appliquées ; SEULS les éléments inédits redemandent
+//   une décision. Export/import JSON de toute la config du dossier.
+function _kpltDossierSnapshot(){
+  const comptes=new Set(), fournisseurs=new Set(), etablissements=new Set();
+  try{
+    Object.values(ST.parsed||{}).forEach(p=>{ (p&&p.comptesList||[]).forEach(c=>{ if(String(c.cpt||"")[0]==="6"||String(c.cpt||"")[0]==="7") comptes.add(String(c.cpt)); });
+      (p&&p.topFournByFlux||[]).forEach(f=>{ if(f&&f.name) fournisseurs.add(String(f.name).toLowerCase().trim()); }); });
+    Object.values(ST.parsedSILAE||{}).forEach(s=>{ const d=(s&&s.salaries)||[]; d.forEach(x=>{ if(x&&x.etab) etablissements.add(String(x.etab).toLowerCase().trim()); }); });
+  }catch(e){}
+  return { comptes:[...comptes], fournisseurs:[...fournisseurs], etablissements:[...etablissements] };
+}
+function _kpltDossierCollect(){
+  const a=ST.answers||{}; const ra=a.retraitementsAvances||{}; const mc=a.multicentres||{};
+  return {
+    v:2, savedAt:new Date().toISOString(), cle:_kpltDossierKey(),
+    exercice:a.exercice, includeTaxesRHOverride:a.includeTaxesRHOverride,
+    qpSasKey:a.qpSasKey, cleCommun:mc.cleCommun,
+    multicentres:{ active:mc.active, mode:mc.mode, sasEntId:mc.sasEntId, entId:mc.entId, centres:mc.centres||[], strategieCommun:mc.strategieCommun, cleCommun:mc.cleCommun, regexPraticiens:mc.regexPraticiens, overridesComptes:mc.overridesComptes||{}, mappingEtabSilae:mc.mappingEtabSilae||{}, communValide:!!mc.communValide },
+    mappingComptesN1N2:a.mappingComptesN1N2||{},
+    dirigeantSocieteTierce:{ active:ra.dirigeantSocieteTierce&&ra.dirigeantSocieteTierce.active, fournSelected:(ra.dirigeantSocieteTierce&&ra.dirigeantSocieteTierce.fournSelected)||[] },
+    snapshot:_kpltDossierSnapshot()
+  };
+}
+function kpltDossierConfigSave(){
+  try{ localStorage.setItem("kplt_dossier_"+_kpltDossierKey(), JSON.stringify(_kpltDossierCollect())); }
+  catch(e){ console.warn("[KPLT_DOSSIER] save échec", e&&e.message); }
+}
+function kpltDossierConfigLoad(){
+  let cfg=null; try{ const raw=localStorage.getItem("kplt_dossier_"+_kpltDossierKey()); if(raw) cfg=JSON.parse(raw); }catch(e){}
+  if(!cfg) return null;
+  return _kpltDossierApply(cfg);
+}
+// Applique une config (persistée OU importée) dans ST.answers SANS écraser les choix déjà faits cette session.
+function _kpltDossierApply(cfg){
+  if(!cfg||typeof cfg!=="object") return null;
+  const a=ST.answers=ST.answers||{}; const mc=a.multicentres=a.multicentres||{};
+  const setIf=(o,k,v)=>{ if(v!==undefined && (o[k]===undefined||o[k]===null||o[k]==="") ) o[k]=v; };
+  setIf(a,"includeTaxesRHOverride",cfg.includeTaxesRHOverride);
+  setIf(a,"qpSasKey",cfg.qpSasKey);
+  if(cfg.multicentres){
+    setIf(mc,"mode",cfg.multicentres.mode);
+    setIf(mc,"sasEntId",cfg.multicentres.sasEntId);
+    setIf(mc,"strategieCommun",cfg.multicentres.strategieCommun);
+    setIf(mc,"regexPraticiens",cfg.multicentres.regexPraticiens);
+    setIf(mc,"cleCommun",cfg.cleCommun);
+    if(cfg.multicentres.communValide && mc.communValide===undefined) mc.communValide=true;
+    // maps : fusion (le saved COMPLÈTE, la session prime clé par clé)
+    mc.overridesComptes=Object.assign({}, cfg.multicentres.overridesComptes||{}, mc.overridesComptes||{});
+    mc.mappingEtabSilae=Object.assign({}, cfg.multicentres.mappingEtabSilae||{}, mc.mappingEtabSilae||{});
+    if((!mc.centres||!mc.centres.length) && cfg.multicentres.centres && cfg.multicentres.centres.length) mc.centres=cfg.multicentres.centres;
+    if(mc.entId===undefined||mc.entId==="") mc.entId=cfg.multicentres.entId;
+  }
+  a.mappingComptesN1N2=Object.assign({}, cfg.mappingComptesN1N2||{}, a.mappingComptesN1N2||{});
+  if(cfg.dirigeantSocieteTierce){
+    a.retraitementsAvances=a.retraitementsAvances||{};
+    const dst=a.retraitementsAvances.dirigeantSocieteTierce=a.retraitementsAvances.dirigeantSocieteTierce||{active:"Non",fournSelected:[]};
+    if((!dst.fournSelected||!dst.fournSelected.length) && cfg.dirigeantSocieteTierce.fournSelected) dst.fournSelected=cfg.dirigeantSocieteTierce.fournSelected;
+  }
+  a._dossierSnapshot=cfg.snapshot||null;   // pour la détection « nouveau » à ce chargement
+  console.log("[KPLT_DOSSIER] config chargée (kplt_dossier_"+_kpltDossierKey()+") — snapshot:", cfg.snapshot?(cfg.snapshot.comptes.length+" comptes, "+cfg.snapshot.fournisseurs.length+" fourn., "+cfg.snapshot.etablissements.length+" étab."):"aucun");
+  return cfg;
+}
+// « Nouveau » : éléments présents dans le FEC actuel mais ABSENTS du snapshot persisté (→ redemandent une décision).
+function kpltDossierNouveau(){
+  const snap=(ST.answers&&ST.answers._dossierSnapshot); if(!snap) return { comptes:[], fournisseurs:[], etablissements:[], hasSnapshot:false };
+  const cur=_kpltDossierSnapshot();
+  const diff=(a,b)=>{ const s=new Set(b||[]); return (a||[]).filter(x=>!s.has(x)); };
+  const out={ comptes:diff(cur.comptes,snap.comptes), fournisseurs:diff(cur.fournisseurs,snap.fournisseurs), etablissements:diff(cur.etablissements,snap.etablissements), hasSnapshot:true };
+  if(out.comptes.length||out.fournisseurs.length||out.etablissements.length) console.log("[KPLT_DOSSIER] éléments NOUVEAUX depuis dernière config :", out.comptes.length+" comptes, "+out.fournisseurs.length+" fourn., "+out.etablissements.length+" étab.");
+  return out;
+}
+function kpltIsCompteNouveau(cpt){ try{ const n=(ST.answers&&ST.answers._dossierNouveau); return !!(n&&n.comptes&&n.comptes.indexOf(String(cpt))>=0); }catch(e){ return false; } }
+// Export / Import JSON de TOUTE la config du dossier (dossier + tags + retraitements).
+function kpltDossierExport(){
+  const key=_kpltDossierKey();
+  const bundle={ format:"kplt-dossier-config", v:2, cle:key, exportedAt:new Date().toISOString(),
+    dossier:_kpltDossierCollect(),
+    tags:(function(){ try{ return JSON.parse(localStorage.getItem("kplt_mapping_"+key)||"null"); }catch(e){ return null; } })(),
+    retrait:(function(){ try{ return JSON.parse(localStorage.getItem("kplt_retrait_"+key)||"null"); }catch(e){ return null; } })() };
+  try{
+    const blob=new Blob([JSON.stringify(bundle,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob); const a=document.createElement("a");
+    a.href=url; a.download="kplt-config-"+key+".json"; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    console.log("[KPLT_DOSSIER] config exportée :", a.download);
+  }catch(e){ console.warn("[KPLT_DOSSIER] export échec", e&&e.message); }
+}
+function kpltDossierImport(obj){
+  if(typeof obj==="string"){ try{ obj=JSON.parse(obj); }catch(e){ console.warn("[KPLT_DOSSIER] JSON invalide"); return false; } }
+  if(!obj||obj.format!=="kplt-dossier-config"){ console.warn("[KPLT_DOSSIER] format inattendu"); return false; }
+  const key=_kpltDossierKey();
+  if(obj.dossier) _kpltDossierApply(obj.dossier);
+  try{ if(obj.tags) localStorage.setItem("kplt_mapping_"+key, JSON.stringify(obj.tags)); }catch(e){}
+  try{ if(obj.retrait) localStorage.setItem("kplt_retrait_"+key, JSON.stringify(obj.retrait)); }catch(e){}
+  if(typeof loadTagMapping==="function") loadTagMapping();
+  if(typeof kpltLoadRetraitState==="function") kpltLoadRetraitState();
+  console.log("[KPLT_DOSSIER] config importée pour", key);
+  return true;
+}
+
 // ★ LOT 2bis — BLOCAGE FOURRE-TOUT : charges 60/61/62x non classées interdites dans le top 8 des postes.
 //   Consomme la classification métier (computeTagsCharges, même moteur que la slide 22). Si le tag
 //   catch-all "autres_fg" pèserait dans le top 8 des postes d'une entité → modale bloquante + abort.
@@ -21962,6 +22812,17 @@ async function kpltOpenRetraitementsAvancesModal(callback){
         const c = document.getElementById(containerId);
         // ★ Lister fournisseurs FEC par entité depuis topFournByFlux (trié par yearDebit)
         // Pas depuis top20 qui est trié par solde (→ raterait les fournisseurs soldés au 31/12)
+        // ★ FIX 24/07 C5 : un fournisseur qui EST une entité du groupe (interco — ex. SAS de gestion)
+        //   ne doit PAS être cochable ici : le neutraliser créerait un DOUBLE retraitement avec
+        //   l'élimination interco. Détection générique (nom d'entité sœur + registre interco), 0 hardcode.
+        const _c5norm = s => (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\b(sas|sarl|selarl|selas|eurl|sci|sa|holding)\b/g," ").replace(/[^a-z0-9]+/g," ").trim();
+        const _c5GrpTokens = (ST.ents||[]).map(e=>({ id:e.id, toks:_c5norm(e.name).split(/\s+/).filter(t=>t.length>=4) }));
+        const _c5IsGroupInterco = (curEntId, nom) => {
+          const nN = _c5norm(nom); if(!nN) return null;
+          for(const g of _c5GrpTokens){ if(g.id===curEntId) continue; if(g.toks.length && g.toks.every(t=>nN.includes(t))) return g.id; }
+          try{ if(typeof kpltIsIntercoFourn==="function" && kpltIsIntercoFourn(curEntId, nom, ST.answers)) return "interco"; }catch(e){}
+          return null;
+        };
         const groups = [];
         Object.keys(ST.parsed||{}).forEach(entId => {
           const p = ST.parsed[entId];
@@ -22007,7 +22868,8 @@ async function kpltOpenRetraitementsAvancesModal(callback){
             nom: f.name || "(inconnu)", 
             cpt: "40x",
             montant: Math.abs(f.yearDebit||f.debit||0),
-            solde: Math.abs(f.solde||0)
+            solde: Math.abs(f.solde||0),
+            intercoGroup: _c5IsGroupInterco(entId, f.name || "")
           })).sort((a,b)=>b.montant-a.montant);
           console.log(`[KPLT_DIRSOC] ${entName}: ${fourns.length} fournisseurs actifs retenus (TOUS, pas de seuil ni limite)`);
           if(fourns.length === 0) return;
@@ -22061,6 +22923,16 @@ async function kpltOpenRetraitementsAvancesModal(callback){
               <tbody>`;
           grp.fourns.forEach((f,i) => {
             const soldeLabel = f.solde > 100 ? gf(Math.round(f.solde))+"€" : '<span style="color:#CBD5E1">soldé</span>';
+            // ★ C5 : entité du groupe (interco) → case DÉSACTIVÉE + explication (double retraitement évité).
+            if(f.intercoGroup){
+              html += `<tr class="kplt-dirsoc-row" style="border-bottom:1px solid #F3F5FA;background:#F8FAFC;opacity:.72" data-nom-low="${(f.nom||'').toLowerCase()}" title="Entité du groupe (interco) — déjà éliminée en consolidation. La cocher créerait un double retraitement.">
+                <td style="padding:5px 8px;text-align:center;width:30px"><input type="checkbox" class="kplt-dirsoc-cb" disabled data-interco="1" data-entid="${grp.entId}" data-idx="${i}" data-montant="${f.montant}" data-nom="${(f.nom||'').replace(/"/g,'&quot;')}" data-cpt="${f.cpt||''}"></td>
+                <td style="padding:5px 8px;color:#64748B;font-weight:600">${f.nom} <span style="display:inline-block;background:#E0E7FF;color:#3730A3;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:8px;margin-left:6px">interco groupe — déjà éliminé</span></td>
+                <td style="padding:5px 8px;text-align:right;font-weight:700;color:#94A3B8">${gf(Math.round(f.montant))}€</td>
+                <td style="padding:5px 8px;text-align:right;color:#94A3B8;font-size:11px">${soldeLabel}</td>
+              </tr>`;
+              return;
+            }
             html += `<tr class="kplt-dirsoc-row" style="border-bottom:1px solid #F3F5FA" data-nom-low="${(f.nom||'').toLowerCase()}">
               <td style="padding:5px 8px;text-align:center;width:30px"><input type="checkbox" class="kplt-dirsoc-cb" data-entid="${grp.entId}" data-idx="${i}" data-montant="${f.montant}" data-nom="${(f.nom||'').replace(/"/g,'&quot;')}" data-cpt="${f.cpt||''}"></td>
               <td style="padding:5px 8px;color:#1E40AF;font-weight:600">${f.nom}</td>
@@ -22116,6 +22988,7 @@ async function kpltOpenRetraitementsAvancesModal(callback){
       collect: () => {
         const sel = [];
         document.querySelectorAll(".kplt-dirsoc-cb:checked").forEach(cb => {
+          if(cb.dataset.interco==="1") return; // ★ C5 : jamais neutraliser une entité groupe interco (double compte)
           sel.push({
             entId: cb.dataset.entid,
             nomAux: cb.dataset.nom,
@@ -23006,21 +23879,25 @@ async function kpltOpenRetraitementsAvancesModal(callback){
   overlay.id = "kplt-retr-modal";
   overlay.style.cssText = "position:fixed;inset:0;background:rgba(10,30,110,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Montserrat,sans-serif";
   overlay.innerHTML = `
-    <div style="background:white;border-radius:12px;width:96%;max-width:1150px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,0.4)">
-      <div style="background:#0A1E6E;color:white;padding:14px 22px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between">
+    <div style="background:white;border-radius:12px;width:96%;max-width:1150px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.4)">
+      <div style="flex-shrink:0;background:#0A1E6E;color:white;padding:14px 22px;display:flex;align-items:center;justify-content:space-between">
         <div>
           <div style="font-weight:700;font-size:15px">🎯 Retraitements avancés — validation pré-génération</div>
           <div style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:2px">Validez les éléments à retraiter dans chaque onglet, puis cliquez sur "Générer le rapport"</div>
         </div>
         <button id="kplt-retr-cancel" style="background:transparent;border:1px solid rgba(255,255,255,0.3);color:white;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px">✕ Annuler</button>
       </div>
-      <div id="kplt-retr-tabs" style="display:flex;background:#F8FAFC;border-bottom:1px solid #E5E7EB;padding:0 14px;overflow-x:auto">
-        ${tabs.map((t,i) => `<div class="kplt-retr-tab" data-tabidx="${i}" style="padding:12px 18px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;border-bottom:3px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:6px">
-          ${t.label} <span class="kplt-retr-badge" data-tabidx="${i}" style="background:#E5E7EB;color:#475569;padding:1px 6px;border-radius:10px;font-size:11px;font-weight:700">0</span>
+      <!-- ★ FIX 24/07 UI : barre d'onglets STICKY (flex-shrink:0) — hors du conteneur scrollable.
+           Onglets larges (min-height 44px), libellé complet + badge d'état, wrap générique N onglets. -->
+      <div id="kplt-retr-tabs" style="flex-shrink:0;display:flex;flex-wrap:wrap;gap:6px;background:#F1F5F9;border-bottom:1px solid #E5E7EB;padding:10px 14px">
+        ${tabs.map((t,i) => `<div class="kplt-retr-tab" data-tabidx="${i}" role="tab" tabindex="0" style="min-height:44px;box-sizing:border-box;padding:8px 16px;cursor:pointer;font-size:12.5px;font-weight:600;color:#334155;background:#FFFFFF;border:1px solid #CBD5E1;border-radius:8px;display:flex;align-items:center;gap:8px;white-space:nowrap;transition:background .12s,border-color .12s">
+          <span class="kplt-retr-tablabel">${t.label}</span>
+          <span class="kplt-retr-badge" data-tabidx="${i}" style="background:#E5E7EB;color:#475569;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:700;display:none">0</span>
+          <span class="kplt-visit-state" data-tabidx="${i}" style="padding:2px 8px;border-radius:10px;font-size:10.5px;font-weight:700;white-space:nowrap"></span>
         </div>`).join("")}
       </div>
-      <div id="kplt-retr-content" style="flex:1;overflow:auto;padding:18px 22px;background:white;min-height:400px"></div>
-      <div style="padding:14px 22px;background:#F8FAFC;border-top:1px solid #E5E7EB;border-radius:0 0 12px 12px;display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <div id="kplt-retr-content" style="flex:1 1 auto;min-height:0;overflow-y:auto;padding:18px 22px;background:white"></div>
+      <div style="flex-shrink:0;padding:14px 22px;background:#F8FAFC;border-top:1px solid #E5E7EB;display:flex;justify-content:space-between;align-items:center;gap:12px">
         <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
           <div style="font-size:11px;color:#475569">${tabs.length} onglet(s) actif(s) · les onglets non cochés au questionnaire ne sont pas affichés</div>
           <div id="kplt-retr-visit-counter" style="font-size:11px;font-weight:700;color:#92400E">0/${tabs.length} onglets visités · ${tabs.length} en attente</div>
@@ -23042,11 +23919,12 @@ async function kpltOpenRetraitementsAvancesModal(callback){
       try { n = t.countItems ? t.countItems() : 0; } catch(e){}
       badge.textContent = n;
       if(n > 0){
+        badge.style.display = "inline-block";
         badge.style.background = "#15803D";
         badge.style.color = "white";
+        badge.title = n + " élément(s) retraité(s)";
       } else {
-        badge.style.background = "#E5E7EB";
-        badge.style.color = "#475569";
+        badge.style.display = "none"; // ★ FIX 24/07 : pas de badge "0" parasite
       }
     });
   };
@@ -23061,23 +23939,19 @@ async function kpltOpenRetraitementsAvancesModal(callback){
 
   const renderVisitMarkers = () => {
     tabs.forEach((t,i) => {
-      const el = document.querySelector(`.kplt-retr-tab[data-tabidx="${i}"]`);
-      if(!el) return;
-      let marker = el.querySelector('.kplt-visit-marker');
-      if(!marker){
-        marker = document.createElement('span');
-        marker.className = 'kplt-visit-marker';
-        marker.style.cssText = 'margin-left:6px;font-size:13px;font-weight:700;line-height:1';
-        el.appendChild(marker);
-      }
+      // ★ FIX 24/07 : badge d'état par onglet — ✓ visité (vert) / ● en attente (orange).
+      const st = document.querySelector(`.kplt-visit-state[data-tabidx="${i}"]`);
+      if(!st) return;
       if(modal_visited_tabs.has(i)){
-        marker.textContent = '✓';
-        marker.style.color = '#15803D';
-        marker.title = 'Onglet visité';
+        st.textContent = '✓ visité';
+        st.style.background = '#DCFCE7';
+        st.style.color = '#15803D';
+        st.title = 'Onglet visité';
       } else {
-        marker.textContent = '⚠';
-        marker.style.color = '#F59E0B';
-        marker.title = 'Onglet à visiter avant génération';
+        st.textContent = '● en attente';
+        st.style.background = '#FEF3C7';
+        st.style.color = '#B45309';
+        st.title = 'Onglet à visiter avant génération';
       }
     });
   };
@@ -23089,8 +23963,14 @@ async function kpltOpenRetraitementsAvancesModal(callback){
     const elCounter = document.getElementById('kplt-retr-visit-counter');
     if(elCounter){
       if(pending > 0){
-        elCounter.textContent = `${v}/${N} onglets visités · ${pending} en attente`;
+        // ★ FIX 24/07 : lien direct « → y aller » vers le 1er onglet non visité.
+        let firstUnvisited = -1;
+        for(let i=0;i<N;i++){ if(!modal_visited_tabs.has(i)){ firstUnvisited=i; break; } }
+        const lbl = firstUnvisited>=0 ? tabs[firstUnvisited].label : '';
         elCounter.style.color = '#92400E';
+        elCounter.innerHTML = `${v}/${N} onglets visités · ${pending} en attente · <a id="kplt-retr-goto" style="color:#0A1E6E;text-decoration:underline;cursor:pointer;font-weight:700">→ y aller : ${lbl}</a>`;
+        const goto = document.getElementById('kplt-retr-goto');
+        if(goto && firstUnvisited>=0) goto.onclick = ()=>showTab(firstUnvisited);
       } else {
         elCounter.textContent = `✓ Les ${N} onglet(s) ont été visités`;
         elCounter.style.color = '#15803D';
@@ -23136,20 +24016,41 @@ async function kpltOpenRetraitementsAvancesModal(callback){
 
   const showTab = async (idx) => {
     currentTabIdx = idx;
+    // ★ FIX 24/07 : style "pill" onglet actif (navy plein) vs inactif (blanc bordé).
     document.querySelectorAll(".kplt-retr-tab").forEach((el,i) => {
-      el.style.borderBottomColor = (i===idx) ? "#0A1E6E" : "transparent";
-      el.style.color = (i===idx) ? "#0A1E6E" : "#475569";
-      el.style.background = (i===idx) ? "white" : "transparent";
+      const on = (i===idx);
+      el.style.background   = on ? "#0A1E6E" : "#FFFFFF";
+      el.style.color        = on ? "#FFFFFF" : "#334155";
+      el.style.borderColor  = on ? "#0A1E6E" : "#CBD5E1";
+      el.setAttribute("aria-selected", on ? "true" : "false");
     });
     // ★ Reset du contenu AVANT le render async pour éviter d'afficher l'ancien onglet
     const cont = document.getElementById("kplt-retr-content");
-    if(cont) cont.innerHTML = `<div style="text-align:center;padding:40px;color:#475569">⏳ Chargement de l'onglet "${tabs[idx].label}"...</div>`;
+    if(cont){ cont.innerHTML = `<div style="text-align:center;padding:40px;color:#475569">⏳ Chargement de l'onglet "${tabs[idx].label}"...</div>`; cont.scrollTop = 0; }
     await tabs[idx].render("kplt-retr-content");
     kpltUpdateTabBadges();
     _markVisited(idx); // ★ FIX 11/05 Patch G : marquage différé 500ms
+    // ★ FIX 24/07 : barre de navigation « ← précédent / suivant → » en bas de CHAQUE onglet.
+    const contEl = document.getElementById("kplt-retr-content");
+    if(contEl){
+      const nav = document.createElement("div");
+      nav.style.cssText = "margin-top:20px;padding-top:14px;border-top:1px dashed #E5E7EB;display:flex;justify-content:space-between;align-items:center;gap:10px";
+      const btnCss = "padding:9px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;border:1px solid #CBD5E1;background:white;color:#334155";
+      const prevHtml = idx>0 ? `<button class="kplt-retr-nav-prev" style="${btnCss}">← Onglet précédent</button>` : `<span></span>`;
+      const isLast = idx >= tabs.length-1;
+      const nextHtml = isLast
+        ? `<button class="kplt-retr-nav-finish" style="${btnCss};border-color:#0A1E6E;background:#0A1E6E;color:white">Terminer — vérifier la génération ✓</button>`
+        : `<button class="kplt-retr-nav-next" style="${btnCss};border-color:#0A1E6E;background:#0A1E6E;color:white">Onglet suivant → <span style="opacity:.8">${tabs[idx+1].label}</span></button>`;
+      nav.innerHTML = prevHtml + nextHtml;
+      contEl.appendChild(nav);
+      const nx = nav.querySelector(".kplt-retr-nav-next"); if(nx) nx.onclick = ()=>showTab(idx+1);
+      const pv = nav.querySelector(".kplt-retr-nav-prev"); if(pv) pv.onclick = ()=>showTab(idx-1);
+      const fn = nav.querySelector(".kplt-retr-nav-finish"); if(fn) fn.onclick = ()=>{ const b=document.getElementById("kplt-retr-validate"); if(b) b.click(); };
+    }
   };
   document.querySelectorAll(".kplt-retr-tab").forEach((el,i) => {
     el.addEventListener("click", () => showTab(i));
+    el.addEventListener("keydown", (ev) => { if(ev.key==="Enter" || ev.key===" "){ ev.preventDefault(); showTab(i); } });
   });
 
   // Boutons annuler / valider
@@ -23218,18 +24119,26 @@ function kpltOpenMulticentresValidationModal(){
         <button id="kplt-mc-close" style="background:transparent;border:none;color:white;font-size:22px;cursor:pointer;line-height:1">×</button>
       </div>
       <div id="kplt-mc-body" style="flex:1;overflow:auto;padding:18px 20px"></div>
-      <div style="padding:14px 20px;border-top:1px solid #E2E8F0;display:flex;gap:10px;justify-content:flex-end;border-radius:0 0 12px 12px">
+      <div style="padding:14px 20px;border-top:1px solid #E2E8F0;display:flex;gap:10px;align-items:center;border-radius:0 0 12px 12px">
+        <button id="kplt-mc-export" title="Exporter toute la config du dossier en JSON" style="background:white;color:#0A1E6E;border:1.5px solid #CBD5E1;padding:8px 12px;border-radius:6px;font-weight:600;font-size:11px;cursor:pointer;font-family:inherit">⬇ Exporter config</button>
+        <button id="kplt-mc-import" title="Importer une config JSON" style="background:white;color:#0A1E6E;border:1.5px solid #CBD5E1;padding:8px 12px;border-radius:6px;font-weight:600;font-size:11px;cursor:pointer;font-family:inherit">⬆ Importer config</button>
+        <input id="kplt-mc-import-file" type="file" accept="application/json,.json" style="display:none">
+        <div style="flex:1"></div>
         <button id="kplt-mc-cancel" style="background:white;color:#475569;border:1.5px solid #E2E8F0;padding:9px 16px;border-radius:6px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit">Annuler</button>
         <button id="kplt-mc-confirm" style="background:#15803D;color:white;border:none;padding:9px 18px;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit">✓ Valider et générer le rapport</button>
       </div>
     </div>`;
     document.body.appendChild(overlay);
-    let done=false, detailsOpen=false;
-    const close=(val)=>{ if(done) return; done=true; overlay.remove(); resolve(val); };
+    let done=false, detailsOpen=false, _mcBodyScroll=0, _mcDetScroll=0; // ★ B4 : préserve le scroll au re-render
+    const close=(val)=>{ if(done) return; if(val){ try{ kpltDossierConfigSave(); }catch(e){} } done=true; overlay.remove(); resolve(val); }; // ★ D : persiste les décisions à la validation
     overlay.addEventListener("click",e=>{ if(e.target===overlay) close(false); });
     document.getElementById("kplt-mc-close").addEventListener("click",()=>close(false));
     document.getElementById("kplt-mc-cancel").addEventListener("click",()=>close(false));
     document.getElementById("kplt-mc-confirm").addEventListener("click",()=>close(true));
+    // ★ D : export / import JSON de la config dossier
+    document.getElementById("kplt-mc-export").addEventListener("click",()=>{ try{ kpltDossierConfigSave(); }catch(e){} kpltDossierExport(); });
+    document.getElementById("kplt-mc-import").addEventListener("click",()=>document.getElementById("kplt-mc-import-file").click());
+    document.getElementById("kplt-mc-import-file").addEventListener("change",e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ if(kpltDossierImport(rd.result)){ renderBody(); } else { alert("Fichier de config invalide."); } }; rd.readAsText(f); });
     const gf=v=>Math.round(v||0).toLocaleString("fr-FR");
     function renderBody(){
       const body=document.getElementById("kplt-mc-body"); if(!body) return;
@@ -23260,35 +24169,79 @@ function kpltOpenMulticentresValidationModal(){
       const intercoLine=(intNb>0)?`<div style="font-size:12px;color:#64748B;margin-bottom:4px">🔗 Interco / SAS neutralisé : ${intNb} compte(s) exclus (${gf(intTot)}€)</div>`:'';
       const anoms=[].concat(cls.anomalies||[], mc.pnl.anomalies||[], sil.anomalies||[]);
       const anomHtml=anoms.length?`<div style="background:#FEF3C7;border-left:3px solid #F59E0B;padding:8px 12px;border-radius:4px;margin:10px 0;font-size:11px;color:#92400E"><b>⚠️ Anomalies (${anoms.length})</b>${anoms.slice(0,14).map(a=>`<div style="margin-top:2px">• ${a.cpt?a.cpt+' ':''}${a.nom?a.nom+' — ':''}${a.raison}</div>`).join("")}${anoms.length>14?`<div style="margin-top:2px">… +${anoms.length-14} autres</div>`:''}</div>`:'<div style="font-size:11px;color:#15803D;margin:10px 0">✅ Aucune anomalie détectée</div>';
-      const silRecap=centres.map((c,i)=>{const b=sil.parCentre[c.id]||{total:{nb:0,brut:0}};return `<div style="font-size:12px;color:#0A1E6E">✅ ${b.total.nb} sal → ${c.label||c.id} (Brut ${gf(b.total.brut)}€)</div>`;}).join("");
+      // ★ B1 25/07 — LÉGENDE des statuts (pastilles couleur + noms réels des centres).
+      const legend=`<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:2px 0 12px;padding:8px 10px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:6px;font-size:10.5px;color:#475569">
+        <b style="color:#0A1E6E">Statuts :</b>
+        <span title="Classé par l'intitulé de compte FEC"><span style="color:#94A3B8">●</span> Auto (détecté par intitulé)</span>
+        ${centres.map((c,i)=>`<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${_mcColor(c,i)};vertical-align:middle"></span> ${c.label||c.id}</span>`).join(" ")}
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#F59E0B;vertical-align:middle"></span> Commun (réparti par clé)</span>
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#64748B;vertical-align:middle"></span> Interco (exclu)</span>
+      </div>`;
+      // ★ B2 : règle appliquée (source de classification) en langage humain.
+      const ruleLabel = s => ({override:"✏️ Manuel",libelle:"Mot-clé libellé",suffixe:"Suffixe compte",commun:"Défaut → Commun",sas:"Interco (libellé SAS)"}[s]||s||"—");
+      const centreLabel = id => id==="commun"?"Commun":(id==="interco"?"Interco":(centres.find(c=>c.id===id)?.label||id));
+      // ★ B3 : affectation en masse SILAE par ÉTABLISSEMENT → centre (persisté answers.multicentres.mappingEtabSilae).
+      const _mapEtab = ST.answers.multicentres.mappingEtabSilae || {};
+      const etabEntries = Object.entries(sil.etablissementsDetectes||{}).sort((a,b)=>b[1].nb-a[1].nb);
+      const etabOptsFor = (etabN, autoId) => { const cur = _mapEtab[etabN] || ""; let o=`<option value="">${cur?"(auto)":"— choisir —"}</option>`; centres.forEach(c=>{ o+=`<option value="${c.id}" ${cur===c.id?'selected':''}>${c.label||c.id}</option>`; }); o+=`<option value="sansCentre" ${cur==='sansCentre'?'selected':''}>Non affecté</option>`; return o; };
+      const etabRows = etabEntries.map(([etab,info])=>{
+        const affId = info.centreId; const affName = affId==="sansCentre" ? '<span style="color:#B91C1C;font-weight:700">non affecté ⚠</span>' : `<span style="color:#0A1E6E;font-weight:600">${centreLabel(affId)}</span>`;
+        return `<tr style="border-bottom:1px solid #F1F5F9">
+          <td style="padding:5px 8px;font-size:11px;color:#334155">${(etab||'(vide)').slice(0,30)}</td>
+          <td style="padding:5px 8px;font-size:11px;text-align:right;color:#64748B;white-space:nowrap">${info.nb} sal · ${gf(info.brut)}€</td>
+          <td style="padding:5px 8px;font-size:11px">${affName} <span style="font-size:9.5px;color:#94A3B8">(${info.source==='mapping'?'manuel':info.source==='auto'?'auto':'—'})</span></td>
+          <td style="padding:5px 8px"><select class="kplt-mc-etab" data-etabn="${info.etabN}" style="font-size:11px;padding:3px 6px;border:1px solid #CBD5E1;border-radius:5px">${etabOptsFor(info.etabN, affId)}</select></td>
+        </tr>`;
+      }).join("");
+      const etabTable = etabEntries.length ? `<div style="border:1px solid #E2E8F0;border-radius:6px;margin-top:6px;overflow:hidden">
+        <table style="width:100%;border-collapse:collapse"><thead><tr style="background:#F3F5FA"><th style="padding:5px 8px;font-size:10px;text-align:left;color:#64748B">Établissement SILAE</th><th style="padding:5px 8px;font-size:10px;text-align:right;color:#64748B">Effectif</th><th style="padding:5px 8px;font-size:10px;text-align:left;color:#64748B">Affecté à</th><th style="padding:5px 8px;font-size:10px;text-align:left;color:#64748B">Réaffecter (masse)</th></tr></thead><tbody>${etabRows}</tbody></table>
+      </div>` : `<div style="font-size:11px;color:#94A3B8;margin-top:4px">Aucune colonne « Établissement » détectée dans le SILAE.</div>`;
+      // SILAE recap par centre (pastilles) + sansCentre actionnable
+      const silRecap=centres.map((c,i)=>{const b=sil.parCentre[c.id]||{total:{nb:0,brut:0}};return `<div style="font-size:12px;color:#0A1E6E;margin-bottom:2px"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${_mcColor(c,i)};margin-right:6px"></span>${b.total.nb} sal → <b>${c.label||c.id}</b> (Brut ${gf(b.total.brut)}€)</div>`;}).join("");
       const sansC=sil.parCentre.sansCentre||{total:{nb:0,brut:0}};
-      const silSans=(sansC.total.nb>0)?`<div style="font-size:12px;color:#B91C1C">⚠️ ${sansC.total.nb} sal sans match centre (Brut ${gf(sansC.total.brut)}€)</div>`:`<div style="font-size:12px;color:#15803D">✅ 0 salarié sans match centre</div>`;
+      const silSans=(sansC.total.nb>0)?`<div style="font-size:12px;color:#B91C1C;margin-top:4px">⚠️ <b>${sansC.total.nb} salarié(s) non affecté(s)</b> (Brut ${gf(sansC.total.brut)}€) — affectez leur établissement à un centre dans le tableau ci-dessus.</div>`:`<div style="font-size:12px;color:#15803D;margin-top:4px">✅ Tous les salariés SILAE sont affectés à un centre.</div>`;
       const ov=ST.answers.multicentres.overridesComptes||{};
       const optsFor=cpt=>{ const cur=ov[cpt]||"__auto"; let o=`<option value="__auto" ${cur==='__auto'?'selected':''}>Auto</option>`; centres.forEach(c=>{ o+=`<option value="${c.id}" ${cur===c.id?'selected':''}>${c.label||c.id}</option>`; }); o+=`<option value="commun" ${cur==='commun'?'selected':''}>Commun</option>`; return o; };
       const sorted=(cls.comptes||[]).slice().sort((a,b)=>b.montant-a.montant);
       const rows=sorted.map(x=>`<tr style="border-bottom:1px solid #F1F5F9">
-        <td style="padding:4px 8px;font-size:10px;font-family:monospace;color:#64748B">${x.cpt}</td>
-        <td style="padding:4px 8px;font-size:10px;color:#334155">${(x.lib||'').slice(0,34)}</td>
+        <td style="padding:4px 8px;font-size:10px;font-family:monospace;color:#64748B">${x.cpt}${(typeof kpltIsCompteNouveau==="function"&&kpltIsCompteNouveau(x.cpt))?' <span style="font-family:Montserrat;background:#DBEAFE;color:#1E40AF;font-size:8.5px;font-weight:700;padding:0 4px;border-radius:6px">NOUVEAU</span>':''}</td>
+        <td style="padding:4px 8px;font-size:10px;color:#334155">${(x.lib||'').slice(0,30)}</td>
+        <td style="padding:4px 8px;font-size:10px;color:#64748B">${((mc.ent&&mc.ent.name)||mc.entId||'').slice(0,16)}</td>
+        <td style="padding:4px 8px;font-size:10px;color:#475569">${ruleLabel(x.source)}</td>
         <td style="padding:4px 8px;font-size:10px;text-align:right;color:#0A1E6E">${gf(x.montant)}€</td>
         <td style="padding:4px 8px"><select class="kplt-mc-ovr" data-cpt="${x.cpt}" style="font-size:10px;padding:2px 4px;border:1px solid #E2E8F0;border-radius:4px">${optsFor(x.cpt)}</select></td></tr>`).join("");
       body.innerHTML=`
-        <div style="font-size:12px;font-weight:700;color:#0A1E6E;margin-bottom:8px">Récap détection automatique — entité ${(mc.ent&&mc.ent.name)||mc.entId}</div>
+        <div style="font-size:12px;font-weight:700;color:#0A1E6E;margin-bottom:6px">Récap détection automatique — entité ${(mc.ent&&mc.ent.name)||mc.entId}</div>
+        ${legend}
         ${recap}${communLine}${intercoLine}
         ${anomHtml}
-        <details ${detailsOpen?'open':''} id="kplt-mc-details" style="margin:10px 0"><summary style="cursor:pointer;font-size:12px;font-weight:600;color:#0A1E6E">Voir / corriger le détail des comptes (${sorted.length}) — la saisie manuelle prime sur l'auto-détection</summary>
-          <div style="max-height:240px;overflow:auto;border:1px solid #E2E8F0;border-radius:6px;margin-top:6px">
-            <table style="width:100%;border-collapse:collapse"><thead><tr style="background:#F3F5FA;position:sticky;top:0"><th style="padding:5px 8px;font-size:10px;text-align:left;color:#64748B">Compte</th><th style="padding:5px 8px;font-size:10px;text-align:left;color:#64748B">Libellé</th><th style="padding:5px 8px;font-size:10px;text-align:right;color:#64748B">Montant</th><th style="padding:5px 8px;font-size:10px;text-align:left;color:#64748B">Centre</th></tr></thead><tbody>${rows}</tbody></table>
-          </div></details>
-        <div style="font-size:12px;font-weight:700;color:#0A1E6E;margin:10px 0 6px">Salariés SILAE</div>
-        ${silRecap}${silSans}`;
+        <div style="font-size:12px;font-weight:700;color:#0A1E6E;margin:12px 0 4px">Affectation des salariés SILAE par établissement</div>
+        ${etabTable}
+        <div style="margin-top:6px">${silRecap}${silSans}</div>
+        <details ${detailsOpen?'open':''} id="kplt-mc-details" style="margin:12px 0"><summary style="cursor:pointer;font-size:12px;font-weight:600;color:#0A1E6E">Voir / corriger le détail des comptes (${sorted.length}) — la saisie manuelle prime sur l'auto-détection</summary>
+          <div id="kplt-mc-detscroll" style="max-height:230px;overflow:auto;border:1px solid #E2E8F0;border-radius:6px;margin-top:6px">
+            <table style="width:100%;border-collapse:collapse"><thead><tr style="background:#F3F5FA;position:sticky;top:0"><th style="padding:5px 8px;font-size:10px;text-align:left;color:#64748B">Compte</th><th style="padding:5px 8px;font-size:10px;text-align:left;color:#64748B">Libellé</th><th style="padding:5px 8px;font-size:10px;text-align:left;color:#64748B">FEC source</th><th style="padding:5px 8px;font-size:10px;text-align:left;color:#64748B">Règle appliquée</th><th style="padding:5px 8px;font-size:10px;text-align:right;color:#64748B">Montant</th><th style="padding:5px 8px;font-size:10px;text-align:left;color:#64748B">Centre</th></tr></thead><tbody>${rows}</tbody></table>
+          </div></details>`;
+      // ★ B4 : restaure le scroll (re-render non destructif pour l'utilisateur)
+      body.scrollTop = _mcBodyScroll;
+      const _ds=document.getElementById("kplt-mc-detscroll"); if(_ds) _ds.scrollTop=_mcDetScroll;
+      const _rerender=()=>{ _mcBodyScroll=body.scrollTop; const d=document.getElementById("kplt-mc-detscroll"); _mcDetScroll=d?d.scrollTop:0; renderBody(); };
       const det=document.getElementById("kplt-mc-details");
       if(det) det.addEventListener("toggle",()=>{ detailsOpen=det.open; });
+      // B3 : réaffectation en masse par établissement → persiste le mapping + recalcule
+      body.querySelectorAll(".kplt-mc-etab").forEach(sel=>sel.addEventListener("change",e=>{
+        const etabN=e.target.dataset.etabn, val=e.target.value;
+        if(!ST.answers.multicentres.mappingEtabSilae) ST.answers.multicentres.mappingEtabSilae={};
+        if(!val) delete ST.answers.multicentres.mappingEtabSilae[etabN];
+        else ST.answers.multicentres.mappingEtabSilae[etabN]=val;
+        _rerender();
+      }));
       body.querySelectorAll(".kplt-mc-ovr").forEach(sel=>sel.addEventListener("change",e=>{
         const cpt=e.target.dataset.cpt, val=e.target.value;
         if(!ST.answers.multicentres.overridesComptes) ST.answers.multicentres.overridesComptes={};
         if(val==="__auto") delete ST.answers.multicentres.overridesComptes[cpt];
         else ST.answers.multicentres.overridesComptes[cpt]=val;
-        renderBody();
+        _rerender();
       }));
     }
     renderBody();
@@ -23296,10 +24249,43 @@ function kpltOpenMulticentresValidationModal(){
 }
 
 async function kpltGenerateWithRetraitements(){
+  // ★ P0-1 26/07 — CONTRÔLE D'INTÉGRITÉ CDR ↔ BILAN (chokepoint unique). (b) hard-block, (a) soft-block+override.
+  try {
+    const _int = kpltControleIntegriteBilan(ST.ents, ST.parsed, ST.answers);
+    if(_int.hard.length){ console.warn("[KPLT_INTEGRITE] HARD BLOCK :", _int.hard); kpltShowIntegriteBlock(_int, null); return; }
+    if(_int.soft.length && !(ST.answers && ST.answers._fecOverride)){
+      console.warn("[KPLT_INTEGRITE] SOFT BLOCK (FEC déséquilibré) :", _int.soft);
+      kpltShowIntegriteBlock(_int, ()=>{ ST.answers._fecOverride=true; ST.answers._fecDesequilibre=_int.soft; try{kpltDossierConfigSave();}catch(e){} kpltGenerateWithRetraitements(); });
+      return;
+    }
+  } catch(e){ console.warn("[KPLT_INTEGRITE] contrôle indisponible :", e&&e.message); }
   // ★ PATCH J 24/05 — Validation multi-centres AVANT génération (chokepoint unique : tous les flux passent ici)
   if(ST.answers.multicentres && ST.answers.multicentres.active){
-    const okMC = await kpltOpenMulticentresValidationModal();
-    if(!okMC){ console.log("[KPLT_MC] Génération annulée par l'utilisateur (modale multi-centres)"); return; }
+    // ★ FIX 24/07 GARDE-FOU A2 : bloquer la génération si la ventilation est invalide (raisons affichées).
+    const _mcv = kpltValidateMulticentres(ST.ents, ST.parsed, ST.parsedSILAE, ST.answers);
+    if(_mcv.shouldRun && !_mcv.valid){
+      console.warn("[KPLT_MC] Génération BLOQUÉE (ventilation invalide) :", (_mcv.reasons||[]).map(r=>r.text||r));
+      // ★ FIX 25/07 (bug 2) : chaque motif ouvre son écran de correction (fin de l'impasse).
+      kpltShowMulticentresBlock(_mcv.reasons, async (code)=>{
+        if(code==="silae" || code==="commun"){
+          // ouvrir la modale de classification (affectation salariés / comptes) puis re-tenter la génération
+          const ok = await kpltOpenMulticentresValidationModal();
+          if(ok) kpltGenerateWithRetraitements();
+        } else {
+          // centres / mots-clés / clé / data → retour au questionnaire multi-centres (step 3)
+          ST.step = 3; render();
+          try{ const el=document.querySelector('[data-mc-toggle],.q-section-title'); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){}
+        }
+      });
+      return;
+    }
+    // ★ MODE B (« 1 entité = 1 centre ») : pas de classification manuelle → on saute la modale de classif.
+    if((_mcv.mode||"intra")==="intra"){
+      const okMC = await kpltOpenMulticentresValidationModal();
+      if(!okMC){ console.log("[KPLT_MC] Génération annulée par l'utilisateur (modale multi-centres)"); return; }
+    } else {
+      console.log("[KPLT_MC] Mode « 1 entité = 1 centre » : "+((_mcv.stats&&_mcv.stats.nbExploitants)||"?")+" centres (entités), ventilation auto — modale de classification non requise.");
+    }
   }
   const ra = ST.answers.retraitementsAvances || {};
   const anyActive = (ra.exercicesAnterieurs?.active==="Oui") ||
@@ -23351,6 +24337,9 @@ async function generate(){
     kpltReapplySilaeBornage();
     // ★ LOT 13 BUG B : charger l'état persisté des coches retraitements (charges/produits) pour ce dossier.
     kpltLoadRetraitState();
+    // ★ D 25/07 : charger la config unifiée du dossier (mappings multi-centres, N1/N2, clés, fournisseurs
+    //   dirigeant, bascule 631) + détecter les éléments NOUVEAUX depuis la dernière config (FEC plus long).
+    try{ kpltDossierConfigLoad(); ST.answers._dossierNouveau = kpltDossierNouveau(); kpltDossierConfigSave(); }catch(e){ console.warn("[KPLT_DOSSIER] load/save échec", e&&e.message); }
 
     // Étape 1b: Extraction structurée des dettes depuis PDFs emprunts/leasing
     if(ST.apiKey){
@@ -23604,17 +24593,28 @@ function bindEvents(){
     });
   });
   document.querySelectorAll(".siren-inp").forEach(inp=>{
+    // ★ FIX 24/07 : sur 'input' → MAJ du state UNIQUEMENT, JAMAIS render() (sinon focus perdu à
+    //   chaque frappe). Le lookup Pappers (qui re-rend la ligne de résultat) se déclenche en DEBOUNCE
+    //   350ms, sur Enter, ou sur blur — jamais pendant la frappe. Le filet _kpltRestoreFocus couvre
+    //   le re-render asynchrone de fetchPappers si le champ est encore focalisé.
     inp.addEventListener("input",e=>{
       const i=+e.target.dataset.ent;
       const siren=e.target.value.replace(/\s/g,"");
-      ST.ents[i].siren=siren;
-      // Déclencher Pappers dès 9 chiffres sans attendre blur
-      if(/^\d{9}$/.test(siren)){
-        fetchPappers(i,siren);
+      ST.ents[i].siren=siren;                       // state only, pas de render
+      if(window.__kpltSirenDeb) clearTimeout(window.__kpltSirenDeb);
+      if(/^\d{9}$/.test(siren) && !ST.ents[i].pappers){
+        window.__kpltSirenDeb=setTimeout(()=>{ fetchPappers(i,siren); }, 350);
       }
-      render();
+    });
+    inp.addEventListener("keydown",e=>{
+      if(e.key==="Enter"){
+        if(window.__kpltSirenDeb) clearTimeout(window.__kpltSirenDeb);
+        const siren=e.target.value.replace(/\s/g,""),i=+e.target.dataset.ent;
+        if(/^\d{9}$/.test(siren)&&!ST.ents[i].pappers)fetchPappers(i,siren);
+      }
     });
     inp.addEventListener("blur",e=>{
+      if(window.__kpltSirenDeb) clearTimeout(window.__kpltSirenDeb);
       const siren=e.target.value.replace(/\s/g,""),i=+e.target.dataset.ent;
       if(/^\d{9}$/.test(siren)&&!ST.ents[i].pappers)fetchPappers(i,siren);
     });
@@ -24002,6 +25002,8 @@ function bindEvents(){
     if(!ST.answers.multicentres) ST.answers.multicentres={active:false,centres:[],strategieCommun:"prorataCA",regexPraticiens:"(chirurgien|dentiste|médecin|orthodonti|pédiatre|kiné|stomato|implanto|endodont|pédodont|orthoptist|orthophoniste|audioprothesiste|podologue)",overridesComptes:{}};
     const mc=ST.answers.multicentres; mc.active=!mc.active;
     if(mc.active){
+      // ★ FIX 25/07 : fixe le mode par défaut intelligent à l'activation (persisté).
+      if(!mc.mode) mc.mode = (typeof kpltSuggestMulticentresMode==="function") ? kpltSuggestMulticentresMode(ST.ents,ST.parsed,ST.answers) : "intra";
       if(!mc.entId){ const asso=ST.ents[0]; mc.entId=(asso&&asso.id)||""; }
       if(!Array.isArray(mc.centres)||mc.centres.length<2){
         mc.centres=[
@@ -24011,6 +25013,10 @@ function bindEvents(){
       }
     }
     render();
+  }));
+  // ★ FIX 25/07 : sélection du mode (intra / groupe).
+  document.querySelectorAll("[data-mc-mode]").forEach(el=>el.addEventListener("click",()=>{
+    if(ST.answers.multicentres){ ST.answers.multicentres.mode=el.dataset.mcMode; render(); }
   }));
   document.querySelectorAll("[data-mc-strategie]").forEach(el=>el.addEventListener("click",()=>{
     ST.answers.multicentres.strategieCommun=el.dataset.mcStrategie; render();
